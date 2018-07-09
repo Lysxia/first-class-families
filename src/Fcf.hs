@@ -60,9 +60,9 @@ data BimapEither
 type instance Eval (BimapEither f g ('Left  x)) = 'Left  (Eval (f x))
 type instance Eval (BimapEither f g ('Right y)) = 'Right (Eval (g y))
 
-data UnMaybe :: b -> (a -> b) -> Maybe a -> Exp b
-type instance Eval (UnMaybe y f 'Nothing) = y
-type instance Eval (UnMaybe y f ('Just x)) = f x
+data UnMaybe :: Exp b -> (a -> Exp b) -> Maybe a -> Exp b
+type instance Eval (UnMaybe y f 'Nothing) = Eval y
+type instance Eval (UnMaybe y f ('Just x)) = Eval (f x)
 
 data Foldr :: (a -> b -> Exp b) -> b -> [a] -> Exp b
 type instance Eval (Foldr f y '[]) = y
