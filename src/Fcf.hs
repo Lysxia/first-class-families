@@ -27,6 +27,15 @@ infixl 4 <$>, <*>
 data Pure :: a -> Exp a
 type instance Eval (Pure x) = x
 
+data Pure1 :: (a -> b) -> a -> Exp b
+type instance Eval (Pure1 f x) = f x
+
+data Pure2 :: (a -> b -> c) -> a -> b -> Exp c
+type instance Eval (Pure2 f x y) = f x y
+
+data Pure3 :: (a -> b -> c -> d) -> a -> b -> c -> Exp d
+type instance Eval (Pure3 f x y z) = f x y z
+
 data (=<<) :: (a -> Exp b) -> Exp a -> Exp b
 type instance Eval (k =<< e) = Eval (k (Eval e))
 
