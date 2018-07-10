@@ -42,6 +42,8 @@ type instance Eval (f <$> e) = f (Eval e)
 data (<*>) :: Exp (a -> b) -> Exp a -> Exp b
 type instance Eval (f <*> e) = Eval f (Eval e)
 
+-- ** More higher-order combinators
+
 data Flip :: (a -> b -> Exp c) -> b -> a -> Exp c
 type instance Eval (Flip f y x) = Eval (f x y)
 
@@ -72,6 +74,8 @@ data Traverse :: (a -> Exp b) -> [a] -> Exp [b]
 type instance Eval (Traverse f '[]) = '[]
 type instance Eval (Traverse f (x ': xs)) = Eval (f x) ': Eval (Traverse f xs)
 
+-- ** Primitives
+
 infixr 2 ||
 infixr 3 &&
 
@@ -86,6 +90,11 @@ type instance Eval ('False && b) = 'False
 type instance Eval (a && 'False) = 'False
 type instance Eval ('True && b) = b
 type instance Eval (a && 'True) = a
+
+-- * Helpful shorthands
+
+-- | Apply and evaluate a unary type function.
+type f @@ x = Eval (f x)
 
 -- * Reification
 
