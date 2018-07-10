@@ -83,6 +83,23 @@ data Traverse :: (a -> Exp b) -> [a] -> Exp [b]
 type instance Eval (Traverse f '[]) = '[]
 type instance Eval (Traverse f (x ': xs)) = Eval (f x) ': Eval (Traverse f xs)
 
+-- | N.B.: This is equivalent to a 'Foldr' flipped.
+data UnList :: b -> (a -> b -> Exp b) -> [a] -> Exp b
+type instance Eval (UnList y f xs) = Eval (Foldr f y xs)
+
+-- | N.B.: The order of the two branches is the opposite of "if":
+-- @UnBool ifFalse ifTrue bool@.
+--
+-- This mirrors the default order of constructors:
+--
+-- @
+-- data Bool = False | True
+-- ----------- False < True
+-- @
+data UnBool :: Exp a -> Exp a -> Bool -> Exp a
+type instance Eval (UnBool fal tru 'False) = Eval fal
+type instance Eval (UnBool fal tru 'True ) = Eval tru
+
 -- ** Primitives
 
 infixr 2 ||
