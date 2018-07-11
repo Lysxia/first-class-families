@@ -5,6 +5,8 @@ synopsis:
 description:
   First class type families,
   eval-style defunctionalization
+  .
+  See "Fcf".
 homepage:            https://github.com/Lysxia/first-class-families#readme
 license:             MIT
 license-file:        LICENSE

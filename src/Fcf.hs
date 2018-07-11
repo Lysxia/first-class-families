@@ -7,6 +7,27 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | First-class type families
+--
+-- For example, here is a regular type family:
+--
+-- @
+-- type family   FromMaybe (a :: k) (m :: Maybe k) :: k
+-- type instance FromMaybe a 'Nothing  = a
+-- type instance FromMaybe a ('Just b) = b
+-- @
+--
+-- With @Fcf@, it translates to a @data@ declaration:
+--
+-- @
+-- data FromMaybe :: k -> Maybe k -> 'Exp' k
+-- type instance 'Eval' (FromMaybe a 'Nothing)  = a
+-- type instance 'Eval' (FromMaybe a ('Just b)) = b
+-- @
+--
+-- - Fcfs can be higher-order.
+-- - The kind constructor 'Exp' is a monad: there's @('=<<')@ and 'Pure'.
+
 module Fcf where
 
 import Data.Kind (Type)
