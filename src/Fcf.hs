@@ -162,6 +162,7 @@ data Error :: Symbol -> Exp a
 type instance Eval (Error msg) = TypeError ('Text msg)
 
 data ConstFn :: a -> b -> Exp a
+type instance Eval (ConstFn a _b) = a
 
 data (++) :: [a] -> [a] -> Exp [a]
 type instance Eval ((++) '[] ys) = ys
