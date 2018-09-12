@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
@@ -30,7 +31,8 @@
 
 module Fcf where
 
-import Data.Kind (Type)
+import Data.Kind (Type, Constraint)
+import GHC.TypeLits (Symbol, Nat, type (+), TypeError, ErrorMessage(..))
 
 -- * First-class type families
 
@@ -154,3 +156,108 @@ instance IsBool 'False where _If _ b = b
 type family   If (b :: Bool) (x :: k) (y :: k) :: k
 type instance If 'True   x _y = x
 type instance If 'False _x  y = y
+
+
+data Error :: Symbol -> Exp a
+type instance Eval (Error msg) = TypeError ('Text msg)
+
+data ConstFn :: a -> b -> Exp a
+type instance Eval (ConstFn a _b) = a
+
+data (++) :: [a] -> [a] -> Exp [a]
+type instance Eval ((++) '[] ys) = ys
+type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
+
+data Filter :: (a -> Exp Bool) -> [a] -> Exp [a]
+type instance Eval (Filter _p '[]) = '[]
+type instance Eval (Filter p (a ': as)) =
+  If (Eval (p a))
+    (a ': Eval (Filter p as))
+    (Eval (Filter p as))
+
+
+data Head :: [a] -> Exp (Maybe a)
+type instance Eval (Head '[]) = 'Nothing
+type instance Eval (Head (a ': _as)) = 'Just a
+
+data Tail :: [a] -> Exp (Maybe [a])
+type instance Eval (Tail '[]) = 'Nothing
+type instance Eval (Tail (_a ': as)) = 'Just as
+
+data Null :: [a] -> Exp Bool
+type instance Eval (Null '[]) = 'True
+type instance Eval (Null (a ': as)) = 'False
+
+data Length :: [a] -> Exp Nat
+type instance Eval (Length '[]) = 0
+type instance Eval (Length (a ': as)) = 1 + Eval (Length as)
+
+data Collapse :: [Constraint] -> Exp Constraint
+type instance Eval (Collapse '[]) = () ~ ()
+type instance Eval (Collapse (a ': as)) = (a, Eval (Collapse as))
+
+data Fst :: (a, b) -> Exp a
+type instance Eval (Fst '(a, _b)) = a
+
+data Snd :: (a, b) -> Exp b
+type instance Eval (Snd '(_a, b)) = b
+
+data TyEq :: a -> b -> Exp Bool
+type instance Eval (TyEq a b) = TyEqImpl a b
+
+type family TyEqImpl (a :: k) (b :: k) :: Bool where
+  TyEqImpl a a = 'True
+  TyEqImpl a b = 'False
+
+infixr 0 $
+data ($) :: (a -> Exp b) -> a -> Exp b
+type instance Eval (($) f a) = Eval (f a)
+
+data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
+type instance Eval (Find _p '[]) = 'Nothing
+type instance Eval (Find p (a ': as)) =
+  If (Eval (p a))
+    ('Just a)
+    (Eval (Find p as))
+
+type Lookup (a :: k) (as :: [(k, b)]) =
+  Map Snd (Eval (Find (($) (TyEq a) <=< Fst) as))
+
+data ZipWith :: (a -> b -> Exp c) -> [a] -> [b] -> Exp [c]
+type instance Eval (ZipWith _f '[] _bs) = '[]
+type instance Eval (ZipWith _f _as '[]) = '[]
+type instance Eval (ZipWith f (a ': as) (b ': bs)) =
+  Eval (f a b) ': Eval (ZipWith f as bs)
+
+type Zip = ZipWith (Pure2 '(,))
+
+data Unzip :: Exp [(a, b)] -> Exp ([a], [b])
+type instance Eval (Unzip as) = Eval (Foldr Cons2 '( '[], '[]) (Eval as))
+
+data Cons2 :: (a, b) -> ([a], [b]) -> Exp ([a], [b])
+type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
+
+infixr 3 ***
+data (***) :: (b -> Exp c) -> (b' -> Exp c') -> (b, b') -> Exp (c, c')
+type instance Eval ((***) f f' '(b, b')) = '(Eval (f b), Eval (f' b'))
+
+
+data Map :: (a -> Exp b) -> f a -> Exp (f b)
+type instance Eval (Map f '[]) = '[]
+type instance Eval (Map f (a ': as)) = Eval (f a) ': Eval (Map f as)
+
+type instance Eval (Map f 'Nothing) = 'Nothing
+type instance Eval (Map f ('Just a)) = 'Just (Eval (f a))
+
+type instance Eval (Map f ('Left x)) = 'Left x
+type instance Eval (Map f ('Right a)) = 'Right (Eval (f a))
+
+type instance Eval (Map f '(x, a)) =
+  '(x, Eval (f a))
+type instance Eval (Map f '(x, y, a)) =
+  '(x, y, Eval (f a))
+type instance Eval (Map f '(x, y, z, a)) =
+  '(x, y, z, Eval (f a))
+type instance Eval (Map f '(x, y, z, w, a)) =
+  '(x, y, z, w, Eval (f a))
+
