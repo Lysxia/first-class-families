@@ -213,10 +213,6 @@ infixr 0 $
 data ($) :: (a -> Exp b) -> a -> Exp b
 type instance Eval (($) f a) = Eval (f a)
 
-data ListMap :: (a -> Exp b) -> [a] -> Exp [b]
-type instance Eval (ListMap f '[]) = '[]
-type instance Eval (ListMap f (a ': as)) = Eval (f a) ': Eval (ListMap f as)
-
 data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
 type instance Eval (Find _p '[]) = 'Nothing
 type instance Eval (Find p (a ': as)) =
@@ -225,10 +221,7 @@ type instance Eval (Find p (a ': as)) =
     (Eval (Find p as))
 
 type Lookup (a :: k) (as :: [(k, b)]) =
-  UnMaybe
-    (Pure 'Nothing)
-    (Pure1 'Just <=< Snd)
-    (Eval (Find (($) (TyEq a) <=< Fst) as))
+  Map Snd (Eval (Find (($) (TyEq a) <=< Fst) as))
 
 data ZipWith :: (a -> b -> Exp c) -> [a] -> [b] -> Exp [c]
 type instance Eval (ZipWith _f '[] _bs) = '[]
@@ -244,8 +237,27 @@ type instance Eval (Unzip as) = Eval (Foldr Cons2 '( '[], '[]) (Eval as))
 data Cons2 :: (a, b) -> ([a], [b]) -> Exp ([a], [b])
 type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
 
+infixr 3 ***
 data (***) :: (b -> Exp c) -> (b' -> Exp c') -> (b, b') -> Exp (c, c')
 type instance Eval ((***) f f' '(b, b')) = '(Eval (f b), Eval (f' b'))
 
-infixr 3 ***
+
+data Map :: (a -> Exp b) -> f a -> Exp (f b)
+type instance Eval (Map f '[]) = '[]
+type instance Eval (Map f (a ': as)) = Eval (f a) ': Eval (Map f as)
+
+type instance Eval (Map f 'Nothing) = 'Nothing
+type instance Eval (Map f ('Just a)) = 'Just (Eval (f a))
+
+type instance Eval (Map f ('Left x)) = 'Left x
+type instance Eval (Map f ('Right a)) = 'Right (Eval (f a))
+
+type instance Eval (Map f '(x, a)) =
+  '(x, Eval (f a))
+type instance Eval (Map f '(x, y, a)) =
+  '(x, y, Eval (f a))
+type instance Eval (Map f '(x, y, z, a)) =
+  '(x, y, z, Eval (f a))
+type instance Eval (Map f '(x, y, z, w, a)) =
+  '(x, y, z, w, Eval (f a))
 
