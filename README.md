@@ -1,5 +1,7 @@
 # First-class type families [![Hackage](https://img.shields.io/hackage/v/first-class-families.svg)](https://hackage.haskell.org/package/first-class-families) [![Build Status](https://travis-ci.org/Lysxia/first-class-families.svg)](https://travis-ci.org/Lysxia/first-class-families)
 
+[Haskell with only one type family](http://blog.poisson.chat/posts/2018-08-06-one-type-family.html) (blogpost)
+
 See `src/Fcf`.
 
 ---
