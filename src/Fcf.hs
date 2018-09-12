@@ -102,10 +102,6 @@ data Foldr :: (a -> b -> Exp b) -> b -> [a] -> Exp b
 type instance Eval (Foldr f y '[]) = y
 type instance Eval (Foldr f y (x ': xs)) = Eval (f x (Eval (Foldr f y xs)))
 
-data Traverse :: (a -> Exp b) -> [a] -> Exp [b]
-type instance Eval (Traverse f '[]) = '[]
-type instance Eval (Traverse f (x ': xs)) = Eval (f x) ': Eval (Traverse f xs)
-
 -- | N.B.: This is equivalent to a 'Foldr' flipped.
 data UnList :: b -> (a -> b -> Exp b) -> [a] -> Exp b
 type instance Eval (UnList y f xs) = Eval (Foldr f y xs)
