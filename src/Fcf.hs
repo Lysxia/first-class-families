@@ -74,7 +74,7 @@ type instance Eval (f <$> e) = f (Eval e)
 data (<*>) :: Exp (a -> b) -> Exp a -> Exp b
 type instance Eval (f <*> e) = Eval f (Eval e)
 
--- ** More higher-order combinators
+-- ** More combinators
 
 data Flip :: (a -> b -> Exp c) -> b -> a -> Exp c
 type instance Eval (Flip f y x) = Eval (f x y)
@@ -82,21 +82,32 @@ type instance Eval (Flip f y x) = Eval (f x y)
 data Uncurry :: (a -> b -> Exp c) -> (a, b) -> Exp c
 type instance Eval (Uncurry f '(x, y)) = Eval (f x y)
 
-data BimapPair :: (a -> Exp a') -> (b -> Exp b') -> (a, b) -> Exp (a', b')
-type instance Eval (BimapPair f g '(x, y)) = '(Eval (f x), Eval (g y))
-
 data UnEither :: (a -> Exp c) -> (b -> Exp c) -> Either a b -> Exp c
 type instance Eval (UnEither f g ('Left  x)) = Eval (f x)
 type instance Eval (UnEither f g ('Right y)) = Eval (g y)
 
-data BimapEither
-  :: (a -> Exp a') -> (b -> Exp b') -> Either a b -> Exp (Either a' b')
-type instance Eval (BimapEither f g ('Left  x)) = 'Left  (Eval (f x))
-type instance Eval (BimapEither f g ('Right y)) = 'Right (Eval (g y))
-
 data UnMaybe :: Exp b -> (a -> Exp b) -> Maybe a -> Exp b
 type instance Eval (UnMaybe y f 'Nothing) = Eval y
 type instance Eval (UnMaybe y f ('Just x)) = Eval (f x)
+
+data ConstFn :: a -> b -> Exp a
+type instance Eval (ConstFn a _b) = a
+
+-- ** Tuples
+
+data Fst :: (a, b) -> Exp a
+type instance Eval (Fst '(a, _b)) = a
+
+data Snd :: (a, b) -> Exp b
+type instance Eval (Snd '(_a, b)) = b
+
+infixr 3 ***
+
+-- | Equivalent to 'Bimap'.
+data (***) :: (b -> Exp c) -> (b' -> Exp c') -> (b, b') -> Exp (c, c')
+type instance Eval ((***) f f' '(b, b')) = '(Eval (f b), Eval (f' b'))
+
+-- ** Lists
 
 data Foldr :: (a -> b -> Exp b) -> b -> [a] -> Exp b
 type instance Eval (Foldr f y '[]) = y
@@ -105,6 +116,95 @@ type instance Eval (Foldr f y (x ': xs)) = Eval (f x (Eval (Foldr f y xs)))
 -- | N.B.: This is equivalent to a 'Foldr' flipped.
 data UnList :: b -> (a -> b -> Exp b) -> [a] -> Exp b
 type instance Eval (UnList y f xs) = Eval (Foldr f y xs)
+
+data (++) :: [a] -> [a] -> Exp [a]
+type instance Eval ((++) '[] ys) = ys
+type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
+
+data Filter :: (a -> Exp Bool) -> [a] -> Exp [a]
+type instance Eval (Filter _p '[]) = '[]
+type instance Eval (Filter p (a ': as)) =
+  If (Eval (p a))
+    (a ': Eval (Filter p as))
+    (Eval (Filter p as))
+
+data Head :: [a] -> Exp (Maybe a)
+type instance Eval (Head '[]) = 'Nothing
+type instance Eval (Head (a ': _as)) = 'Just a
+
+data Tail :: [a] -> Exp (Maybe [a])
+type instance Eval (Tail '[]) = 'Nothing
+type instance Eval (Tail (_a ': as)) = 'Just as
+
+data Null :: [a] -> Exp Bool
+type instance Eval (Null '[]) = 'True
+type instance Eval (Null (a ': as)) = 'False
+
+data Length :: [a] -> Exp Nat
+type instance Eval (Length '[]) = 0
+type instance Eval (Length (a ': as)) = 1 + Eval (Length as)
+
+data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
+type instance Eval (Find _p '[]) = 'Nothing
+type instance Eval (Find p (a ': as)) =
+  If (Eval (p a))
+    ('Just a)
+    (Eval (Find p as))
+
+-- |
+-- @
+-- 'Lookup' :: k -> [(k, b)] -> 'Exp' ('Maybe' b)
+-- @
+type Lookup (a :: k) (as :: [(k, b)]) =
+  (Map Snd (Eval (Find (TyEq a <=< Fst) as)) :: Exp (Maybe b))
+
+data ZipWith :: (a -> b -> Exp c) -> [a] -> [b] -> Exp [c]
+type instance Eval (ZipWith _f '[] _bs) = '[]
+type instance Eval (ZipWith _f _as '[]) = '[]
+type instance Eval (ZipWith f (a ': as) (b ': bs)) =
+  Eval (f a b) ': Eval (ZipWith f as bs)
+
+-- |
+-- @
+-- 'Zip' :: [a] -> [b] -> 'Exp' [(a, b)]
+-- @
+type Zip = ZipWith (Pure2 '(,))
+
+data Unzip :: Exp [(a, b)] -> Exp ([a], [b])
+type instance Eval (Unzip as) = Eval (Foldr Cons2 '( '[], '[]) (Eval as))
+
+data Cons2 :: (a, b) -> ([a], [b]) -> Exp ([a], [b])
+type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
+
+-- ** Overloaded functions
+
+-- | Type-level 'fmap' for type-level functors.
+data Map :: (a -> Exp b) -> f a -> Exp (f b)
+
+type instance Eval (Map f '[]) = '[]
+type instance Eval (Map f (a ': as)) = Eval (f a) ': Eval (Map f as)
+
+type instance Eval (Map f 'Nothing) = 'Nothing
+type instance Eval (Map f ('Just a)) = 'Just (Eval (f a))
+
+type instance Eval (Map f ('Left x)) = 'Left x
+type instance Eval (Map f ('Right a)) = 'Right (Eval (f a))
+
+type instance Eval (Map f '(x, a)) =
+  '(x, Eval (f a))
+type instance Eval (Map f '(x, y, a)) =
+  '(x, y, Eval (f a))
+type instance Eval (Map f '(x, y, z, a)) =
+  '(x, y, z, Eval (f a))
+type instance Eval (Map f '(x, y, z, w, a)) =
+  '(x, y, z, w, Eval (f a))
+
+data Bimap :: (a -> Exp a') -> (b -> Exp b') -> f a b -> Exp (f a' b')
+
+type instance Eval (Bimap f g '(x, y)) = '(Eval (f x), Eval (g y))
+
+type instance Eval (Bimap f g ('Left  x)) = 'Left  (Eval (f x))
+type instance Eval (Bimap f g ('Right y)) = 'Right (Eval (g y))
 
 -- | N.B.: The order of the two branches is the opposite of "if":
 -- @UnBool ifFalse ifTrue bool@.
@@ -136,6 +236,26 @@ type instance Eval (a && 'False) = 'False
 type instance Eval ('True && b) = b
 type instance Eval (a && 'True) = a
 
+-- ** Other
+
+data Error :: Symbol -> Exp a
+type instance Eval (Error msg) = TypeError ('Text msg)
+
+data Collapse :: [Constraint] -> Exp Constraint
+type instance Eval (Collapse '[]) = () ~ ()
+type instance Eval (Collapse (a ': as)) = (a, Eval (Collapse as))
+
+data TyEq :: a -> b -> Exp Bool
+type instance Eval (TyEq a b) = TyEqImpl a b
+
+type family TyEqImpl (a :: k) (b :: k) :: Bool where
+  TyEqImpl a a = 'True
+  TyEqImpl a b = 'False
+
+infixr 0 $
+data ($) :: (a -> Exp b) -> a -> Exp b
+type instance Eval (($) f a) = Eval (f a)
+
 -- * Helpful shorthands
 
 -- | Apply and evaluate a unary type function.
@@ -152,117 +272,3 @@ instance IsBool 'False where _If _ b = b
 type family   If (b :: Bool) (x :: k) (y :: k) :: k
 type instance If 'True   x _y = x
 type instance If 'False _x  y = y
-
-
-data Error :: Symbol -> Exp a
-type instance Eval (Error msg) = TypeError ('Text msg)
-
-data ConstFn :: a -> b -> Exp a
-type instance Eval (ConstFn a _b) = a
-
-data (++) :: [a] -> [a] -> Exp [a]
-type instance Eval ((++) '[] ys) = ys
-type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
-
-data Filter :: (a -> Exp Bool) -> [a] -> Exp [a]
-type instance Eval (Filter _p '[]) = '[]
-type instance Eval (Filter p (a ': as)) =
-  If (Eval (p a))
-    (a ': Eval (Filter p as))
-    (Eval (Filter p as))
-
-
-data Head :: [a] -> Exp (Maybe a)
-type instance Eval (Head '[]) = 'Nothing
-type instance Eval (Head (a ': _as)) = 'Just a
-
-data Tail :: [a] -> Exp (Maybe [a])
-type instance Eval (Tail '[]) = 'Nothing
-type instance Eval (Tail (_a ': as)) = 'Just as
-
-data Null :: [a] -> Exp Bool
-type instance Eval (Null '[]) = 'True
-type instance Eval (Null (a ': as)) = 'False
-
-data Length :: [a] -> Exp Nat
-type instance Eval (Length '[]) = 0
-type instance Eval (Length (a ': as)) = 1 + Eval (Length as)
-
-data Collapse :: [Constraint] -> Exp Constraint
-type instance Eval (Collapse '[]) = () ~ ()
-type instance Eval (Collapse (a ': as)) = (a, Eval (Collapse as))
-
-data Fst :: (a, b) -> Exp a
-type instance Eval (Fst '(a, _b)) = a
-
-data Snd :: (a, b) -> Exp b
-type instance Eval (Snd '(_a, b)) = b
-
-data TyEq :: a -> b -> Exp Bool
-type instance Eval (TyEq a b) = TyEqImpl a b
-
-type family TyEqImpl (a :: k) (b :: k) :: Bool where
-  TyEqImpl a a = 'True
-  TyEqImpl a b = 'False
-
-infixr 0 $
-data ($) :: (a -> Exp b) -> a -> Exp b
-type instance Eval (($) f a) = Eval (f a)
-
-data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
-type instance Eval (Find _p '[]) = 'Nothing
-type instance Eval (Find p (a ': as)) =
-  If (Eval (p a))
-    ('Just a)
-    (Eval (Find p as))
-
--- |
--- @
--- 'Lookup' :: k -> [(k, b)] -> 'Exp' ('Maybe' b)
--- @
-type Lookup (a :: k) (as :: [(k, b)]) =
-  (Map Snd (Eval (Find (($) (TyEq a) <=< Fst) as)) :: Exp (Maybe b))
-
-data ZipWith :: (a -> b -> Exp c) -> [a] -> [b] -> Exp [c]
-type instance Eval (ZipWith _f '[] _bs) = '[]
-type instance Eval (ZipWith _f _as '[]) = '[]
-type instance Eval (ZipWith f (a ': as) (b ': bs)) =
-  Eval (f a b) ': Eval (ZipWith f as bs)
-
--- |
--- @
--- 'Zip' :: [a] -> [b] -> 'Exp' [(a, b)]
--- @
-type Zip = ZipWith (Pure2 '(,))
-
-data Unzip :: Exp [(a, b)] -> Exp ([a], [b])
-type instance Eval (Unzip as) = Eval (Foldr Cons2 '( '[], '[]) (Eval as))
-
-data Cons2 :: (a, b) -> ([a], [b]) -> Exp ([a], [b])
-type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
-
-infixr 3 ***
-data (***) :: (b -> Exp c) -> (b' -> Exp c') -> (b, b') -> Exp (c, c')
-type instance Eval ((***) f f' '(b, b')) = '(Eval (f b), Eval (f' b'))
-
--- | Type-level 'fmap' for type-level functors.
-data Map :: (a -> Exp b) -> f a -> Exp (f b)
-
-type instance Eval (Map f '[]) = '[]
-type instance Eval (Map f (a ': as)) = Eval (f a) ': Eval (Map f as)
-
-type instance Eval (Map f 'Nothing) = 'Nothing
-type instance Eval (Map f ('Just a)) = 'Just (Eval (f a))
-
-type instance Eval (Map f ('Left x)) = 'Left x
-type instance Eval (Map f ('Right a)) = 'Right (Eval (f a))
-
-type instance Eval (Map f '(x, a)) =
-  '(x, Eval (f a))
-type instance Eval (Map f '(x, y, a)) =
-  '(x, y, Eval (f a))
-type instance Eval (Map f '(x, y, z, a)) =
-  '(x, y, z, Eval (f a))
-type instance Eval (Map f '(x, y, z, w, a)) =
-  '(x, y, z, w, Eval (f a))
-
