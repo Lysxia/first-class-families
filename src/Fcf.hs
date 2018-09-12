@@ -220,8 +220,12 @@ type instance Eval (Find p (a ': as)) =
     ('Just a)
     (Eval (Find p as))
 
+-- |
+-- @
+-- 'Lookup' :: k -> [(k, b)] -> 'Exp' ('Maybe' b)
+-- @
 type Lookup (a :: k) (as :: [(k, b)]) =
-  Map Snd (Eval (Find (($) (TyEq a) <=< Fst) as))
+  (Map Snd (Eval (Find (($) (TyEq a) <=< Fst) as)) :: Exp (Maybe b))
 
 data ZipWith :: (a -> b -> Exp c) -> [a] -> [b] -> Exp [c]
 type instance Eval (ZipWith _f '[] _bs) = '[]
@@ -229,6 +233,10 @@ type instance Eval (ZipWith _f _as '[]) = '[]
 type instance Eval (ZipWith f (a ': as) (b ': bs)) =
   Eval (f a b) ': Eval (ZipWith f as bs)
 
+-- |
+-- @
+-- 'Zip' :: [a] -> [b] -> 'Exp' [(a, b)]
+-- @
 type Zip = ZipWith (Pure2 '(,))
 
 data Unzip :: Exp [(a, b)] -> Exp ([a], [b])
@@ -241,8 +249,9 @@ infixr 3 ***
 data (***) :: (b -> Exp c) -> (b' -> Exp c') -> (b, b') -> Exp (c, c')
 type instance Eval ((***) f f' '(b, b')) = '(Eval (f b), Eval (f' b'))
 
-
+-- | Type-level 'fmap' for type-level functors.
 data Map :: (a -> Exp b) -> f a -> Exp (f b)
+
 type instance Eval (Map f '[]) = '[]
 type instance Eval (Map f (a ': as)) = Eval (f a) ': Eval (Map f as)
 
