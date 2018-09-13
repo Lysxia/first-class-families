@@ -306,3 +306,11 @@ type instance Eval (FindIndex p (a ': as)) =
       (Map ((+) 1)
           (Eval (FindIndex p as))))
 
+data SetIndex :: Nat -> a -> [a] -> Exp [a]
+type instance Eval (SetIndex n a' as) = SetIndexImpl n a' as
+
+type family SetIndexImpl (n :: Nat) (a' :: k) (as :: [k]) where
+  SetIndexImpl _n _a' '[] = '[]
+  SetIndexImpl 0 a' (_a ': as) = a' ': as
+  SetIndexImpl n a' (a ': as) = a ': SetIndexImpl (n TL.- 1) a' as
+
