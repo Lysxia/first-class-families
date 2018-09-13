@@ -32,7 +32,8 @@
 module Fcf where
 
 import Data.Kind (Type, Constraint)
-import GHC.TypeLits (Symbol, Nat, type (+), TypeError, ErrorMessage(..))
+import GHC.TypeLits (Symbol, Nat, TypeError, ErrorMessage(..))
+import qualified GHC.TypeLits as TL
 
 -- * First-class type families
 
@@ -142,7 +143,7 @@ type instance Eval (Null (a ': as)) = 'False
 
 data Length :: [a] -> Exp Nat
 type instance Eval (Length '[]) = 0
-type instance Eval (Length (a ': as)) = 1 + Eval (Length as)
+type instance Eval (Length (a ': as)) = 1 TL.+ Eval (Length as)
 
 data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
 type instance Eval (Find _p '[]) = 'Nothing
@@ -272,3 +273,36 @@ instance IsBool 'False where _If _ b = b
 type family   If (b :: Bool) (x :: k) (y :: k) :: k
 type instance If 'True   x _y = x
 type instance If 'False _x  y = y
+
+
+type family Stuck :: a
+
+data FromMaybe :: k -> Maybe k -> Exp k
+type instance Eval (FromMaybe a 'Nothing)   = a
+type instance Eval (FromMaybe _a ('Just b)) = b
+
+data Not :: Bool -> Exp Bool
+type instance Eval (Not 'True)  = 'False
+type instance Eval (Not 'False) = 'True
+
+data (+) :: Nat -> Nat -> Exp Nat
+type instance Eval ((+) a b) = a TL.+ b
+
+data (-) :: Nat -> Nat -> Exp Nat
+type instance Eval ((-) a b) = a TL.- b
+
+data (*) :: Nat -> Nat -> Exp Nat
+type instance Eval ((*) a b) = a TL.* b
+
+data (^) :: Nat -> Nat -> Exp Nat
+type instance Eval ((^) a b) = a TL.^ b
+
+data FindIndex :: (a -> Exp Bool) -> [a] -> Exp (Maybe Nat)
+type instance Eval (FindIndex _p '[]) = 'Nothing
+type instance Eval (FindIndex p (a ': as)) =
+  If (Eval (p a))
+    ('Just 0)
+    (Eval
+      (Map ((+) 1)
+          (Eval (FindIndex p as))))
+
