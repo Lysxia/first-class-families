@@ -314,3 +314,19 @@ type family SetIndexImpl (n :: Nat) (a' :: k) (as :: [k]) where
   SetIndexImpl 0 a' (_a ': as) = a' ': as
   SetIndexImpl n a' (a ': as) = a ': SetIndexImpl (n TL.- 1) a' as
 
+data IsJust :: Maybe a -> Exp Bool
+type instance Eval (IsJust ('Just _a)) = 'True
+type instance Eval (IsJust 'Nothing) = 'False
+
+data IsNothing :: Maybe a -> Exp Bool
+type instance Eval (IsNothing ('Just _a)) = 'False
+type instance Eval (IsNothing 'Nothing) = 'True
+
+data IsLeft :: Either a b -> Exp Bool
+type instance Eval (IsLeft ('Left _a)) = 'True
+type instance Eval (IsLeft ('Right _a)) = 'False
+
+data IsRight :: Either a b -> Exp Bool
+type instance Eval (IsRight ('Left _a)) = 'False
+type instance Eval (IsRight ('Right _a)) = 'True
+
