@@ -300,11 +300,9 @@ type instance Eval ((^) a b) = a TL.^ b
 data FindIndex :: (a -> Exp Bool) -> [a] -> Exp (Maybe Nat)
 type instance Eval (FindIndex _p '[]) = 'Nothing
 type instance Eval (FindIndex p (a ': as)) =
-  If (Eval (p a))
-    ('Just 0)
-    (Eval
-      (Map ((+) 1)
-          (Eval (FindIndex p as))))
+  Eval (If (Eval (p a))
+    (Pure ('Just 0))
+    (Map ((+) 1) =<< FindIndex p as))
 
 data SetIndex :: Nat -> a -> [a] -> Exp [a]
 type instance Eval (SetIndex n a' as) = SetIndexImpl n a' as
