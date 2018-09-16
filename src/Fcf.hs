@@ -28,6 +28,16 @@
 --
 -- - Fcfs can be higher-order.
 -- - The kind constructor 'Exp' is a monad: there's @('=<<')@ and 'Pure'.
+--
+-- Essential language extensions for "Fcf":
+--
+-- > {-# LANGUAGE
+-- >     DataKinds,
+-- >     PolyKinds,
+-- >     TypeFamilies,
+-- >     TypeInType,
+-- >     TypeOperators,
+-- >     UndecidableInstances #-}
 
 module Fcf where
 
