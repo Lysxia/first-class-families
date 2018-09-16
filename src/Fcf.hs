@@ -87,10 +87,6 @@ data UnEither :: (a -> Exp c) -> (b -> Exp c) -> Either a b -> Exp c
 type instance Eval (UnEither f g ('Left  x)) = Eval (f x)
 type instance Eval (UnEither f g ('Right y)) = Eval (g y)
 
-data UnMaybe :: Exp b -> (a -> Exp b) -> Maybe a -> Exp b
-type instance Eval (UnMaybe y f 'Nothing) = Eval y
-type instance Eval (UnMaybe y f ('Just x)) = Eval (f x)
-
 data ConstFn :: a -> b -> Exp a
 type instance Eval (ConstFn a _b) = a
 
@@ -152,12 +148,31 @@ type instance Eval (Find p (a ': as)) =
     ('Just a)
     (Eval (Find p as))
 
--- |
+-- | Find the index of an element satisfying the predicate.
+data FindIndex :: (a -> Exp Bool) -> [a] -> Exp (Maybe Nat)
+type instance Eval (FindIndex _p '[]) = 'Nothing
+type instance Eval (FindIndex p (a ': as)) =
+  Eval (If (Eval (p a))
+    (Pure ('Just 0))
+    (Map ((+) 1) =<< FindIndex p as))
+
+-- | Find an element associated with a key.
 -- @
 -- 'Lookup' :: k -> [(k, b)] -> 'Exp' ('Maybe' b)
 -- @
 type Lookup (a :: k) (as :: [(k, b)]) =
   (Map Snd (Eval (Find (TyEq a <=< Fst) as)) :: Exp (Maybe b))
+
+-- | Modify an element at a given index.
+--
+-- The list is unchanged if the index is out of bounds.
+data SetIndex :: Nat -> a -> [a] -> Exp [a]
+type instance Eval (SetIndex n a' as) = SetIndexImpl n a' as
+
+type family SetIndexImpl (n :: Nat) (a' :: k) (as :: [k]) where
+  SetIndexImpl _n _a' '[] = '[]
+  SetIndexImpl 0 a' (_a ': as) = a' ': as
+  SetIndexImpl n a' (a ': as) = a ': SetIndexImpl (n TL.- 1) a' as
 
 data ZipWith :: (a -> b -> Exp c) -> [a] -> [b] -> Exp [c]
 type instance Eval (ZipWith _f '[] _bs) = '[]
@@ -176,6 +191,34 @@ type instance Eval (Unzip as) = Eval (Foldr Cons2 '( '[], '[]) (Eval as))
 
 data Cons2 :: (a, b) -> ([a], [b]) -> Exp ([a], [b])
 type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
+
+-- ** Maybe
+
+data UnMaybe :: Exp b -> (a -> Exp b) -> Maybe a -> Exp b
+type instance Eval (UnMaybe y f 'Nothing) = Eval y
+type instance Eval (UnMaybe y f ('Just x)) = Eval (f x)
+
+data FromMaybe :: k -> Maybe k -> Exp k
+type instance Eval (FromMaybe a 'Nothing)   = a
+type instance Eval (FromMaybe _a ('Just b)) = b
+
+data IsJust :: Maybe a -> Exp Bool
+type instance Eval (IsJust ('Just _a)) = 'True
+type instance Eval (IsJust 'Nothing) = 'False
+
+data IsNothing :: Maybe a -> Exp Bool
+type instance Eval (IsNothing ('Just _a)) = 'False
+type instance Eval (IsNothing 'Nothing) = 'True
+
+-- ** Either
+
+data IsLeft :: Either a b -> Exp Bool
+type instance Eval (IsLeft ('Left _a)) = 'True
+type instance Eval (IsLeft ('Right _a)) = 'False
+
+data IsRight :: Either a b -> Exp Bool
+type instance Eval (IsRight ('Left _a)) = 'False
+type instance Eval (IsRight ('Right _a)) = 'True
 
 -- ** Overloaded functions
 
@@ -207,6 +250,8 @@ type instance Eval (Bimap f g '(x, y)) = '(Eval (f x), Eval (g y))
 type instance Eval (Bimap f g ('Left  x)) = 'Left  (Eval (f x))
 type instance Eval (Bimap f g ('Right y)) = 'Right (Eval (g y))
 
+-- ** Bool
+
 -- | N.B.: The order of the two branches is the opposite of "if":
 -- @UnBool ifFalse ifTrue bool@.
 --
@@ -219,8 +264,6 @@ type instance Eval (Bimap f g ('Right y)) = 'Right (Eval (g y))
 data UnBool :: Exp a -> Exp a -> Bool -> Exp a
 type instance Eval (UnBool fal tru 'False) = Eval fal
 type instance Eval (UnBool fal tru 'True ) = Eval tru
-
--- ** Primitives
 
 infixr 2 ||
 infixr 3 &&
@@ -236,6 +279,24 @@ type instance Eval ('False && b) = 'False
 type instance Eval (a && 'False) = 'False
 type instance Eval ('True && b) = b
 type instance Eval (a && 'True) = a
+
+data Not :: Bool -> Exp Bool
+type instance Eval (Not 'True)  = 'False
+type instance Eval (Not 'False) = 'True
+
+-- ** Nat
+
+data (+) :: Nat -> Nat -> Exp Nat
+type instance Eval ((+) a b) = a TL.+ b
+
+data (-) :: Nat -> Nat -> Exp Nat
+type instance Eval ((-) a b) = a TL.- b
+
+data (*) :: Nat -> Nat -> Exp Nat
+type instance Eval ((*) a b) = a TL.* b
+
+data (^) :: Nat -> Nat -> Exp Nat
+type instance Eval ((^) a b) = a TL.^ b
 
 -- ** Other
 
@@ -257,6 +318,9 @@ infixr 0 $
 data ($) :: (a -> Exp b) -> a -> Exp b
 type instance Eval (($) f a) = Eval (f a)
 
+-- | A stuck type that can be used like a type-level 'undefined'.
+type family Stuck :: a
+
 -- * Helpful shorthands
 
 -- | Apply and evaluate a unary type function.
@@ -273,58 +337,3 @@ instance IsBool 'False where _If _ b = b
 type family   If (b :: Bool) (x :: k) (y :: k) :: k
 type instance If 'True   x _y = x
 type instance If 'False _x  y = y
-
-
-type family Stuck :: a
-
-data FromMaybe :: k -> Maybe k -> Exp k
-type instance Eval (FromMaybe a 'Nothing)   = a
-type instance Eval (FromMaybe _a ('Just b)) = b
-
-data Not :: Bool -> Exp Bool
-type instance Eval (Not 'True)  = 'False
-type instance Eval (Not 'False) = 'True
-
-data (+) :: Nat -> Nat -> Exp Nat
-type instance Eval ((+) a b) = a TL.+ b
-
-data (-) :: Nat -> Nat -> Exp Nat
-type instance Eval ((-) a b) = a TL.- b
-
-data (*) :: Nat -> Nat -> Exp Nat
-type instance Eval ((*) a b) = a TL.* b
-
-data (^) :: Nat -> Nat -> Exp Nat
-type instance Eval ((^) a b) = a TL.^ b
-
-data FindIndex :: (a -> Exp Bool) -> [a] -> Exp (Maybe Nat)
-type instance Eval (FindIndex _p '[]) = 'Nothing
-type instance Eval (FindIndex p (a ': as)) =
-  Eval (If (Eval (p a))
-    (Pure ('Just 0))
-    (Map ((+) 1) =<< FindIndex p as))
-
-data SetIndex :: Nat -> a -> [a] -> Exp [a]
-type instance Eval (SetIndex n a' as) = SetIndexImpl n a' as
-
-type family SetIndexImpl (n :: Nat) (a' :: k) (as :: [k]) where
-  SetIndexImpl _n _a' '[] = '[]
-  SetIndexImpl 0 a' (_a ': as) = a' ': as
-  SetIndexImpl n a' (a ': as) = a ': SetIndexImpl (n TL.- 1) a' as
-
-data IsJust :: Maybe a -> Exp Bool
-type instance Eval (IsJust ('Just _a)) = 'True
-type instance Eval (IsJust 'Nothing) = 'False
-
-data IsNothing :: Maybe a -> Exp Bool
-type instance Eval (IsNothing ('Just _a)) = 'False
-type instance Eval (IsNothing 'Nothing) = 'True
-
-data IsLeft :: Either a b -> Exp Bool
-type instance Eval (IsLeft ('Left _a)) = 'True
-type instance Eval (IsLeft ('Right _a)) = 'False
-
-data IsRight :: Either a b -> Exp Bool
-type instance Eval (IsRight ('Left _a)) = 'False
-type instance Eval (IsRight ('Right _a)) = 'True
-
