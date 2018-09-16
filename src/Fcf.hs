@@ -315,6 +315,9 @@ type family TyEqImpl (a :: k) (b :: k) :: Bool where
   TyEqImpl a b = 'False
 
 infixr 0 $
+
+-- | Note that this denotes the identity function, so @($) f@ can usually be
+-- replaced with @f@.
 data ($) :: (a -> Exp b) -> a -> Exp b
 type instance Eval (($) f a) = Eval (f a)
 
