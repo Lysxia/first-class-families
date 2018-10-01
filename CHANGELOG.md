@@ -1,3 +1,7 @@
+# 0.3.0.1
+
+- GHC 8.6 compatibility
+
 # 0.3.0.0
 
 - More new functions, thanks to isovector
