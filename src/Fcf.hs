@@ -303,7 +303,7 @@ data (-) :: Nat -> Nat -> Exp Nat
 type instance Eval ((-) a b) = a TL.- b
 
 data (*) :: Nat -> Nat -> Exp Nat
-type instance Eval ((*) a b) = a TL.* b
+type instance Eval ((Fcf.*) a b) = a TL.* b
 
 data (^) :: Nat -> Nat -> Exp Nat
 type instance Eval ((^) a b) = a TL.^ b
