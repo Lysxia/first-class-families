@@ -76,6 +76,14 @@ type instance Eval (k =<< e) = Eval (k (Eval e))
 data (<=<) :: (b -> Exp c) -> (a -> Exp b) -> a -> Exp c
 type instance Eval ((f <=< g) x) = Eval (f (Eval (g x)))
 
+type LiftM = (=<<)
+
+data LiftM2 :: (a -> b -> Exp c) -> Exp a -> Exp b -> Exp c
+type instance Eval (LiftM2 f x y) = Eval (f (Eval x) (Eval y))
+
+data LiftM3 :: (a -> b -> c -> Exp d) -> Exp a -> Exp b -> Exp c -> Exp d
+type instance Eval (LiftM3 f x y z) = Eval (f (Eval x) (Eval y) (Eval z))
+
 data Join :: Exp (Exp a) -> Exp a
 type instance Eval (Join e) = Eval (Eval e)
 
