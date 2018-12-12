@@ -316,6 +316,18 @@ type instance Eval ((Fcf.*) a b) = a TL.* b
 data (^) :: Nat -> Nat -> Exp Nat
 type instance Eval ((^) a b) = a TL.^ b
 
+data (<=) :: Nat -> Nat -> Exp Bool
+type instance Eval ((<=) a b) = a TL.<=? b
+
+data (>=) :: Nat -> Nat -> Exp Bool
+type instance Eval ((>=) a b) = b TL.<=? a
+
+data (<) :: Nat -> Nat -> Exp Bool
+type instance Eval ((<) a b) = Eval (Not =<< (a >= b))
+
+data (>) :: Nat -> Nat -> Exp Bool
+type instance Eval ((>) a b) = Eval (Not =<< (a <= b))
+
 -- ** Other
 
 data Error :: Symbol -> Exp a
