@@ -305,14 +305,13 @@ type instance Eval (Not 'False) = 'True
 type Otherwise = 'True
 
 data Guarded :: [(Bool, Exp a)] -> Exp a
-type instance Eval (Guarded ('(p, x) ': xs)) =
-    If p (Eval x) (Eval (Guarded xs))
+type instance Eval (Guarded ('(p, x) ': xs)) = Eval (If p x (Guarded xs))
 
 type Otherwise1 = ConstFn 'True
 
 data Guarded1 :: a -> [(a -> Exp Bool, Exp b)] -> Exp b
 type instance Eval (Guarded1 x ('(p, y) ': ys)) =
-    If (Eval (p x)) (Eval y) (Eval (Guarded1 x ys))
+    Eval (If (Eval (p x)) y (Guarded1 x ys))
 
 -- ** Nat
 
