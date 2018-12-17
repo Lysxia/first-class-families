@@ -19,6 +19,12 @@ type instance Eval (FromMaybe a 'Nothing)  = a
 type instance Eval (FromMaybe a ('Just b)) = b
 ```
 
+That way, the `FromMaybe` constructor can be passed to higher-order fcfs.
+
+```haskell
+Eval (Map (FromMaybe 0) '[ 'Just 1, 'Nothing ])  =  '[ 1, 0 ] :: [Nat]
+```
+
 Essential language extensions:
 
 ```haskell
