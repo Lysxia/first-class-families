@@ -1,8 +1,39 @@
 # First-class type families [![Hackage](https://img.shields.io/hackage/v/first-class-families.svg)](https://hackage.haskell.org/package/first-class-families) [![Build Status](https://travis-ci.org/Lysxia/first-class-families.svg)](https://travis-ci.org/Lysxia/first-class-families)
 
-[Haskell with only one type family](http://blog.poisson.chat/posts/2018-08-06-one-type-family.html) (blogpost)
+For example, consider this simple type family:
 
-See `src/Fcf`.
+```haskell
+type family   FromMaybe (a :: k) (m :: Maybe k) :: k
+type instance FromMaybe a 'Nothing  = a
+type instance FromMaybe a ('Just b) = b
+```
+
+With first-class-families, it translates to a `data` declaration
+and instances for a single `Eval` family:
+
+```haskell
+import Fcf
+
+data FromMaybe :: k -> Maybe k -> Exp k
+type instance Eval (FromMaybe a 'Nothing)  = a
+type instance Eval (FromMaybe a ('Just b)) = b
+```
+
+Essential language extensions:
+
+```haskell
+{-# LANGUAGE
+    DataKinds,
+    PolyKinds,
+    TypeFamilies,
+    TypeInType,
+    TypeOperators,
+    UndecidableInstances #-}
+```
+
+## See also
+
+[Haskell with only one type family](http://blog.poisson.chat/posts/2018-08-06-one-type-family.html) (blogpost)
 
 ---
 
