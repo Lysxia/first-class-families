@@ -302,14 +302,29 @@ data Not :: Bool -> Exp Bool
 type instance Eval (Not 'True)  = 'False
 type instance Eval (Not 'False) = 'True
 
-data a := b = a := b
-infixr 0 :=
-
-type Otherwise = ConstFn 'True
-
-data Guarded :: a -> [(a -> Exp Bool) := Exp b] -> Exp b
+-- | A conditional choosing the first branch whose guard @a -> 'Exp' 'Bool'@
+-- accepts a given value @a@.
+--
+-- @
+-- type UnitPrefix n = 'Eval' ('Guarded' n
+--   '[ TyEq 0 \':= 'Pure' \"\"
+--    , TyEq 1 \':= 'Pure' \"deci\"
+--    , TyEq 2 \':= 'Pure' \"hecto\"
+--    , TyEq 3 \':= 'Pure' \"kilo\"
+--    , TyEq 6 \':= 'Pure' \"mega\"
+--    , TyEq 9 \':= 'Pure' \"giga\"
+--    ])
+-- @
+data Guarded :: a -> [Guard (a -> Exp Bool) (Exp b)] -> Exp b
 type instance Eval (Guarded x ((p ':= y) ': ys)) =
     Eval (If (Eval (p x)) y (Guarded x ys))
+
+-- | A fancy-looking pair type to use with 'Guarded'.
+data Guard a b = a := b
+infixr 0 :=
+
+-- | A catch-all guard for 'Guarded'.
+type Otherwise = ConstFn 'True
 
 -- ** Nat
 
