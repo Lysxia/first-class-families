@@ -29,6 +29,15 @@ library
   ghc-options:         -Wall
   default-language:    Haskell2010
 
+test-suite fcf-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             test.hs
+  default-language:    Haskell2010
+  build-depends:
+    base,
+    first-class-families
+
 source-repository head
   type:     git
   location: https://github.com/Lysxia/first-class-families
