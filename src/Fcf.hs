@@ -302,6 +302,15 @@ data Not :: Bool -> Exp Bool
 type instance Eval (Not 'True)  = 'False
 type instance Eval (Not 'False) = 'True
 
+data a := b = a := b
+infixr 0 :=
+
+type Otherwise = ConstFn 'True
+
+data Guarded :: a -> [(a -> Exp Bool) := Exp b] -> Exp b
+type instance Eval (Guarded x ((p ':= y) ': ys)) =
+    Eval (If (Eval (p x)) y (Guarded x ys))
+
 -- ** Nat
 
 data (+) :: Nat -> Nat -> Exp Nat
