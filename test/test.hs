@@ -4,7 +4,7 @@
     TypeOperators #-}
 
 import Data.Type.Equality ((:~:)(Refl))
-import GHC.TypeNats (Nat)
+import GHC.TypeLits (Nat)
 import Fcf
 
 type UnitPrefix (n :: Nat) = Eval (Guarded n
