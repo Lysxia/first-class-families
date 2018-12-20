@@ -305,7 +305,7 @@ type instance Eval (Not 'False) = 'True
 data a := b = a := b
 infixr 0 :=
 
-type Otherwise1 = ConstFn 'True
+type Otherwise = ConstFn 'True
 
 data Guarded :: a -> [(a -> Exp Bool) := Exp b] -> Exp b
 type instance Eval (Guarded x ((p ':= y) ': ys)) =
