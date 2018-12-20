@@ -305,14 +305,17 @@ type instance Eval (Not 'False) = 'True
 -- | A conditional choosing the first branch whose guard @a -> 'Exp' 'Bool'@
 -- accepts a given value @a@.
 --
+-- === Example
+--
 -- @
 -- type UnitPrefix n = 'Eval' ('Guarded' n
---   '[ TyEq 0 \':= 'Pure' \"\"
---    , TyEq 1 \':= 'Pure' \"deci\"
---    , TyEq 2 \':= 'Pure' \"hecto\"
---    , TyEq 3 \':= 'Pure' \"kilo\"
---    , TyEq 6 \':= 'Pure' \"mega\"
---    , TyEq 9 \':= 'Pure' \"giga\"
+--   '[ 'TyEq' 0 \'':=' 'Pure' \"\"
+--    , 'TyEq' 1 \'':=' 'Pure' \"deci\"
+--    , 'TyEq' 2 \'':=' 'Pure' \"hecto\"
+--    , 'TyEq' 3 \'':=' 'Pure' \"kilo\"
+--    , 'TyEq' 6 \'':=' 'Pure' \"mega\"
+--    , 'TyEq' 9 \'':=' 'Pure' \"giga\"
+--    , 'Otherwise' \'':=' 'Error' "Something else"
 --    ])
 -- @
 data Guarded :: a -> [Guard (a -> Exp Bool) (Exp b)] -> Exp b

@@ -14,6 +14,7 @@ type UnitPrefix (n :: Nat) = Eval (Guarded n
    , TyEq 3 ':= Pure "kilo"
    , TyEq 6 ':= Pure "mega"
    , TyEq 9 ':= Pure "giga"
+   , Otherwise ':= Error "Something else"
    ])
 
 -- Compile-time tests
