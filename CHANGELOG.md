@@ -4,7 +4,7 @@
 
     + `LiftM`, `LiftM2`, `LiftM3`
     + `(<=)`, `(>=)`, `(<)`, `(>)`
-    + `Guarded`, `Otherwise`, `(:=)`
+    + `Guarded`, `Guard((:=))`, `Otherwise`
 
 # 0.3.0.1
 
