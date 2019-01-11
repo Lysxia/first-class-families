@@ -8,6 +8,7 @@
 
 module Fcf.Data.Nat
   ( -- * Reexported type
+    -- | From "GHC.TypeNats".
 
     Nat
 
