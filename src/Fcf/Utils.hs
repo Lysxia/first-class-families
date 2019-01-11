@@ -5,6 +5,7 @@
     PolyKinds,
     RankNTypes,
     TypeFamilies,
+    TypeInType,
     TypeOperators #-}
 
 module Fcf.Utils
@@ -25,7 +26,7 @@ data Error :: Symbol -> Exp a
 type instance Eval (Error msg) = TypeError ('Text msg)
 
 data Collapse :: [Constraint] -> Exp Constraint
-type instance Eval (Collapse '[]) = ()
+type instance Eval (Collapse '[]) = (() :: Constraint)
 type instance Eval (Collapse (a ': as)) = (a, Eval (Collapse as))
 
 data TyEq :: a -> b -> Exp Bool

@@ -2,6 +2,7 @@
     DataKinds,
     PolyKinds,
     TypeFamilies,
+    TypeInType,
     TypeOperators #-}
 
 -- | The 'Eval' family.
