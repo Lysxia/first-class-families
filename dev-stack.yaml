@@ -1,0 +1,5 @@
+# To use this file, you can link to it:
+#   ln -s dev-stack.yaml stack.yaml
+resolver: lts-13.2
+packages:
+- .
