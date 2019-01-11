@@ -24,6 +24,13 @@ library
   hs-source-dirs:      src
   exposed-modules:
     Fcf
+    Fcf.Core
+    Fcf.Combinators
+    Fcf.Data
+    Fcf.Data.Bool
+    Fcf.Data.Nat
+    Fcf.Classes
+    Fcf.Utils
   build-depends:
     -- This upper bound is conservative.
     base >= 4.9 && < 4.13
