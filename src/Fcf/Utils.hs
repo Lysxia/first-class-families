@@ -25,6 +25,9 @@ import Fcf.Core
 data Error :: Symbol -> Exp a
 type instance Eval (Error msg) = TypeError ('Text msg)
 
+data TError :: ErrorMessage -> Exp a
+type instance Eval (TError msg) = TypeError msg
+
 data Collapse :: [Constraint] -> Exp Constraint
 type instance Eval (Collapse '[]) = (() :: Constraint)
 type instance Eval (Collapse (a ': as)) = (a, Eval (Collapse as))
