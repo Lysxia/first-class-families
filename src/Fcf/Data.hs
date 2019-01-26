@@ -30,14 +30,18 @@ module Fcf.Data
 
   , Foldr
   , UnList
+  , Cons
   , type (++)
   , Filter
   , Head
+  , Last
   , Tail
+  , Init
   , Null
   , Length
   , Find
   , FindIndex
+  , Elem
   , Lookup
   , SetIndex
   , ZipWith
@@ -106,6 +110,9 @@ type instance Eval (IsJust 'Nothing) = 'False
 
 -- ** Lists
 
+data Cons :: a -> [a] -> Exp [a]
+type instance Eval (Cons a as) = a ': as
+
 data Foldr :: (a -> b -> Exp b) -> b -> [a] -> Exp b
 type instance Eval (Foldr f y '[]) = y
 type instance Eval (Foldr f y (x ': xs)) = Eval (f x (Eval (Foldr f y xs)))
@@ -128,6 +135,17 @@ type instance Eval (Filter p (a ': as)) =
 data Head :: [a] -> Exp (Maybe a)
 type instance Eval (Head '[]) = 'Nothing
 type instance Eval (Head (a ': _as)) = 'Just a
+
+data Last :: [a] -> Exp (Maybe a)
+type instance Eval (Last '[]) = 'Nothing
+type instance Eval (Last (a ': '[])) = 'Just a
+type instance Eval (Last (a ': b ': as)) = Eval (Last (b ': as))
+
+data Init :: [a] -> Exp (Maybe [a])
+type instance Eval (Init '[]) = 'Nothing
+type instance Eval (Init (a ': '[])) = 'Just '[]
+type instance Eval (Init (a ': b ': as)) =
+  Eval (Map (Cons a) =<< (Init (b ': as)))
 
 data Tail :: [a] -> Exp (Maybe [a])
 type instance Eval (Tail '[]) = 'Nothing
@@ -155,6 +173,8 @@ type instance Eval (FindIndex p (a ': as)) =
   Eval (If (Eval (p a))
     (Pure ('Just 0))
     (Map ((+) 1) =<< FindIndex p as))
+
+type Elem a as = IsJust =<< FindIndex (TyEq a) as
 
 -- | Find an element associated with a key.
 -- @
