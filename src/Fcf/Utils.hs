@@ -11,6 +11,7 @@
 -- | Miscellaneous families.
 module Fcf.Utils
   ( Error
+  , TError
   , Constraints
   , TyEq
   , Stuck
