@@ -17,6 +17,7 @@ module Fcf.Data.Nat
   , type (+)
   , type (-)
   , type (Fcf.Data.Nat.*)
+  , type (^)
   , type (<=)
   , type (>=)
   , type (<)

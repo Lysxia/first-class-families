@@ -12,6 +12,7 @@ module Fcf.Data.Common
     Uncurry
   , Fst
   , Snd
+  , type (***)
 
     -- ** Either
 

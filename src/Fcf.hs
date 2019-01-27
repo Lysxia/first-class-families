@@ -63,6 +63,7 @@ module Fcf
   , Uncurry
   , Fst
   , Snd
+  , type (***)
 
     -- ** Either
 
@@ -114,6 +115,7 @@ module Fcf
   , type (+)
   , type (-)
   , type (Fcf.Data.Nat.*)
+  , type (^)
   , type (<=)
   , type (>=)
   , type (<)
