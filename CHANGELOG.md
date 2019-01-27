@@ -1,3 +1,14 @@
+# 0.5.0.0
+
+- Modularized library
+
+- `Fcf.Utils`:
+
+    + Added `TError`
+    + Renamed `Collapse` to `Constraints`
+
+- `Fcf.Data.List`: Added `Cons`, `Last`, `Init`, `Elem`
+
 # 0.4.0.0
 
 - New functions (blmage)
