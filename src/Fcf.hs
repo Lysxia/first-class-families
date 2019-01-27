@@ -129,7 +129,7 @@ module Fcf
     -- * Miscellaneous
 
   , Error
-  , Collapse
+  , Constraints
   , TyEq
   , Stuck
   , IsBool(_If)

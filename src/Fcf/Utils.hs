@@ -10,7 +10,7 @@
 
 module Fcf.Utils
   ( Error
-  , Collapse
+  , Constraints
   , TyEq
   , Stuck
   , IsBool(_If)
@@ -28,9 +28,9 @@ type instance Eval (Error msg) = TypeError ('Text msg)
 data TError :: ErrorMessage -> Exp a
 type instance Eval (TError msg) = TypeError msg
 
-data Collapse :: [Constraint] -> Exp Constraint
-type instance Eval (Collapse '[]) = (() :: Constraint)
-type instance Eval (Collapse (a ': as)) = (a, Eval (Collapse as))
+data Constraints :: [Constraint] -> Exp Constraint
+type instance Eval (Constraints '[]) = (() :: Constraint)
+type instance Eval (Constraints (a ': as)) = (a, Eval (Constraints as))
 
 data TyEq :: a -> b -> Exp Bool
 type instance Eval (TyEq a b) = TyEqImpl a b
