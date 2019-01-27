@@ -137,8 +137,9 @@ module Fcf
 
 import Fcf.Core
 import Fcf.Combinators
-import Fcf.Data
 import Fcf.Data.Bool
+import Fcf.Data.Common
+import Fcf.Data.List
 import Fcf.Data.Nat
 import Fcf.Classes
 import Fcf.Utils

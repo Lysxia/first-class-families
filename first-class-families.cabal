@@ -26,8 +26,9 @@ library
     Fcf
     Fcf.Core
     Fcf.Combinators
-    Fcf.Data
     Fcf.Data.Bool
+    Fcf.Data.Common
+    Fcf.Data.List
     Fcf.Data.Nat
     Fcf.Classes
     Fcf.Utils
