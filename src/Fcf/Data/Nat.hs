@@ -6,6 +6,10 @@
     TypeOperators,
     UndecidableInstances #-}
 
+-- | Natural numbers.
+--
+-- Note that the operators from this module conflict with "GHC.TypeLits" and
+-- "GHC.TypeNats".
 module Fcf.Data.Nat
   ( -- * Reexported type
     -- | From "GHC.TypeNats".

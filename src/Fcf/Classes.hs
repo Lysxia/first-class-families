@@ -5,14 +5,13 @@
     TypeInType,
     TypeOperators #-}
 
+-- | Overloaded functions.
 module Fcf.Classes
   ( Map
   , Bimap
   ) where
 
 import Fcf.Core
-
--- ** Overloaded functions
 
 -- | Type-level 'fmap' for type-level functors.
 data Map :: (a -> Exp b) -> f a -> Exp (f b)

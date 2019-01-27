@@ -6,6 +6,10 @@
     TypeOperators,
     UndecidableInstances #-}
 
+-- | Booleans.
+--
+-- Note that the operations from this module conflict with
+-- "Data.Type.Bool".
 module Fcf.Data.Bool
   ( UnBool
   , type (||)

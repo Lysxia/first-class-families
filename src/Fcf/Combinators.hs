@@ -6,6 +6,7 @@
     TypeOperators,
     UndecidableInstances #-}
 
+-- | General fcf combinators.
 module Fcf.Combinators
   ( Pure
   , Pure1
