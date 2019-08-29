@@ -30,7 +30,6 @@ module Fcf.Data.List
   , Cons2
   ) where
 
-import GHC.TypeLits (Nat)
 import qualified GHC.TypeLits as TL
 
 import Fcf.Core

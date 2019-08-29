@@ -1,10 +1,15 @@
 {-# LANGUAGE
+    CPP,
     DataKinds,
     PolyKinds,
     TypeFamilies,
     TypeInType,
     TypeOperators,
     UndecidableInstances #-}
+
+#if __GLASGOW_HASKELL__ >= 806
+{-# LANGUAGE NoStarIsType #-}
+#endif
 
 -- | Natural numbers.
 --
