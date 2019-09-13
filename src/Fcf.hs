@@ -113,8 +113,9 @@ module Fcf
     -- ** Case splitting
 
   , Case
-  , Match
+  , Match()
   , type (-->)
+  , Is
   , Any
   , Else
 

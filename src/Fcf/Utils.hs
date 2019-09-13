@@ -6,7 +6,8 @@
     RankNTypes,
     TypeFamilies,
     TypeInType,
-    TypeOperators #-}
+    TypeOperators,
+    UndecidableInstances #-}
 
 -- | Miscellaneous families.
 module Fcf.Utils
@@ -17,8 +18,9 @@ module Fcf.Utils
   , Stuck
   , IsBool(_If)
   , Case
-  , Match
+  , Match()
   , type (-->)
+  , Is
   , Any
   , Else
 
@@ -68,31 +70,32 @@ instance IsBool 'False where _If _ b = b
 
 infix 0 -->
 
-data Match j k = Match_ j k | Any_ k | Else_ (j -> Exp k)
+data Match j k
+  = Match_ j k
+  | Is_ (j -> Exp Bool) k
+  | Any_ k
+  | Else_ (j -> Exp k)
 
 -- | Equivalent (limited) of @\\case { .. }@ syntax at value level. Supports
 -- matching of exact types ('-->') and final matches for any type ('Any') or
 -- for passing type to subcomputation ('Else'). Examples:
 --
 -- @
--- type BoolToNat = Case [
---     'True  --> 0
+-- type BoolToNat = Case
+--   [ 'True  --> 0
 --   , 'False --> 1
 --   ]
 --
--- type NatToBool = Case [
---     0 --> 'False
+-- type NatToBool = Case
+--   [ 0 --> 'False
 --   , Any   'True
 --   ]
 --
--- type ZeroOneOrSucc = Case [
---     0  --> 0
+-- type ZeroOneOrSucc = Case
+--   [ 0  --> 0
 --   , 1  --> 1
 --   , Else   ((+) 1)
 --   ]
---
--- data Incr :: Nat -> Exp Nat
--- type instance Eval (Incr n) = n + 1
 -- @
 data Case :: [Match j k] -> j -> Exp k
 type instance Eval (Case ms a) = Case_ ms a
@@ -100,15 +103,21 @@ type instance Eval (Case ms a) = Case_ ms a
 type family Case_ (ms :: [Match j k]) (a :: j) :: k where
   Case_ ('Match_ a b : _ ) a = b
   Case_ ('Match_ _ _ : ms) a = Case_ ms a
+  Case_ ('Is_ p b    : ms) a = Case_ [ 'True  --> b
+                                     , 'False --> Case_ ms a
+                                     ] (p @@ a)
   Case_ ('Any_ b     : _ ) _ = b
-  Case_ ('Else_ f    : _ ) a = Eval (f a)
+  Case_ ('Else_ f    : _ ) a = f @@ a
 
 -- | Match concrete type in 'Case'.
-type (-->) = 'Match_
+type (-->) = ('Match_ :: j -> k -> Match j k)
+
+-- | Match on predicate being successful with type in 'Case'.
+type Is = ('Is_ :: (j -> Exp Bool) -> k -> Match j k)
 
 -- | Match any type in 'Case'. Should be used as a final branch.
-type Any = 'Any_
+type Any = ('Any_ :: k -> Match j k)
 
 -- | Pass type being matched in 'Case' to subcomputation. Should be used as a
 -- final branch.
-type Else = 'Else_
+type Else = ('Else_ :: (j -> Exp k) -> Match j k)

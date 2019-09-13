@@ -78,6 +78,7 @@ type instance Eval (Not 'False) = 'True
 data Guarded :: a -> [Guard (a -> Exp Bool) (Exp b)] -> Exp b
 type instance Eval (Guarded x ((p ':= y) ': ys)) =
     Eval (If (Eval (p x)) y (Guarded x ys))
+{-# DEPRECATED Guarded "Use 'Case' instead" #-}
 
 -- | A fancy-looking pair type to use with 'Guarded'.
 data Guard a b = a := b
