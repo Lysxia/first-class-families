@@ -29,7 +29,7 @@ import Fcf.Core
 
 -- ** Monadic operations
 
-infixr 1 =<<, <=<
+infixr 1 =<<, >>=, <=<
 infixl 4 <$>, <*>
 
 data Pure :: a -> Exp a
@@ -46,6 +46,9 @@ type instance Eval (Pure3 f x y z) = f x y z
 
 data (=<<) :: (a -> Exp b) -> Exp a -> Exp b
 type instance Eval (k =<< e) = Eval (k (Eval e))
+
+data (>>=) :: Exp a -> (a -> Exp b) -> Exp b
+type instance Eval (e >>= k) = Eval (k (Eval e))
 
 data (<=<) :: (b -> Exp c) -> (a -> Exp b) -> a -> Exp c
 type instance Eval ((f <=< g) x) = Eval (f (Eval (g x)))

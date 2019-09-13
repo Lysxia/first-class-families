@@ -16,8 +16,13 @@ module Fcf.Utils
   , TyEq
   , Stuck
   , IsBool(_If)
+  , Case
+  , Match
+  , type (-->)
+  , Any
+  , Else
 
-    -- | From "Data.Type.Bool".
+    -- * From "Data.Type.Bool"
   , If
   ) where
 
@@ -58,3 +63,52 @@ class IsBool (b :: Bool) where
 
 instance IsBool 'True  where _If a _ = a
 instance IsBool 'False where _If _ b = b
+
+-- * Case splitting
+
+infix 0 -->
+
+data Match j k = Match_ j k | Any_ k | Else_ (j -> Exp k)
+
+-- | Equivalent (limited) of @\\case { .. }@ syntax at value level. Supports
+-- matching of exact types ('-->') and final matches for any type ('Any') or
+-- for passing type to subcomputation ('Else'). Examples:
+--
+-- @
+-- type BoolToNat = Case [
+--     'True  --> 0
+--   , 'False --> 1
+--   ]
+--
+-- type NatToBool = Case [
+--     0 --> 'False
+--   , Any   'True
+--   ]
+--
+-- type ZeroOneOrSucc = Case [
+--     0  --> 0
+--   , 1  --> 1
+--   , Else   ((+) 1)
+--   ]
+--
+-- data Incr :: Nat -> Exp Nat
+-- type instance Eval (Incr n) = n + 1
+-- @
+data Case :: [Match j k] -> j -> Exp k
+type instance Eval (Case ms a) = Case_ ms a
+
+type family Case_ (ms :: [Match j k]) (a :: j) :: k where
+  Case_ ('Match_ a b : _ ) a = b
+  Case_ ('Match_ _ _ : ms) a = Case_ ms a
+  Case_ ('Any_ b     : _ ) _ = b
+  Case_ ('Else_ f    : _ ) a = Eval (f a)
+
+-- | Match concrete type in 'Case'.
+type (-->) = 'Match_
+
+-- | Match any type in 'Case'. Should be used as a final branch.
+type Any = 'Any_
+
+-- | Pass type being matched in 'Case' to subcomputation. Should be used as a
+-- final branch.
+type Else = 'Else_

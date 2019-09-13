@@ -110,6 +110,14 @@ module Fcf
   , Guard((:=))
   , Otherwise
 
+    -- ** Case splitting
+
+  , Case
+  , Match
+  , type (-->)
+  , Any
+  , Else
+
     -- ** Nat
 
   , type (+)

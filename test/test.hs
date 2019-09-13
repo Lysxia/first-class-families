@@ -17,10 +17,23 @@ type UnitPrefix (n :: Nat) = Eval (Guarded n
    , Otherwise ':= Error "Something else"
    ])
 
+type UnitPrefix' = Case [
+    0 --> ""
+  , 1 --> "deci"
+  , 2 --> "hecto"
+  , 3 --> "kilo"
+  , 6 --> "mega"
+  , 9 --> "giga"
+  , Any   (Error @@ "Something Else")
+  ]
+
 -- Compile-time tests
 
 _ = Refl :: UnitPrefix 0 :~: ""
 _ = Refl :: UnitPrefix 9 :~: "giga"
+
+_ = Refl :: Eval (UnitPrefix' 0) :~: ""
+_ = Refl :: Eval (UnitPrefix' 3) :~: "kilo"
 
 -- Dummy
 
