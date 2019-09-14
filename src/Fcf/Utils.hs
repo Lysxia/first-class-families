@@ -76,9 +76,9 @@ data Match j k
   | Any_ k
   | Else_ (j -> Exp k)
 
--- | Equivalent (limited) of @\\case { .. }@ syntax at value level. Supports
--- matching of exact types ('-->') and final matches for any type ('Any') or
--- for passing type to subcomputation ('Else'). Examples:
+-- | (Limited) equivalent of @\\case { .. }@ syntax. Supports matching of exact
+-- values ('-->') and final matches for any value ('Any') or for passing value
+-- to subcomputation ('Else'). Examples:
 --
 -- @
 -- type BoolToNat = Case
