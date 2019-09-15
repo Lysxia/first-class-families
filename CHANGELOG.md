@@ -1,11 +1,17 @@
+# 0.6.0.0
+
+- Add `Fcf.Utils.Case` and `(Fcf.Combinators.>>=)`
+- Deprecate `Fcf.Bool.Guarded`
+- GHC 8.8 compatibility
+
 # 0.5.0.0
 
 - Modularized library
 
 - `Fcf.Utils`:
 
-    + Added `TError`
-    + Renamed `Collapse` to `Constraints`
+    + Add `TError`
+    + Rename `Collapse` to `Constraints`
 
 - `Fcf.Data.List`: Added `Cons`, `Last`, `Init`, `Elem`
 
