@@ -6,7 +6,8 @@
     RankNTypes,
     TypeFamilies,
     TypeInType,
-    TypeOperators #-}
+    TypeOperators,
+    UndecidableInstances #-}
 
 -- | Miscellaneous families.
 module Fcf.Utils
@@ -16,8 +17,14 @@ module Fcf.Utils
   , TyEq
   , Stuck
   , IsBool(_If)
+  , Case
+  , Match()
+  , type (-->)
+  , Is
+  , Any
+  , Else
 
-    -- | From "Data.Type.Bool".
+    -- * From "Data.Type.Bool"
   , If
   ) where
 
@@ -58,3 +65,59 @@ class IsBool (b :: Bool) where
 
 instance IsBool 'True  where _If a _ = a
 instance IsBool 'False where _If _ b = b
+
+-- * Case splitting
+
+infix 0 -->
+
+data Match j k
+  = Match_ j k
+  | Is_ (j -> Exp Bool) k
+  | Any_ k
+  | Else_ (j -> Exp k)
+
+-- | (Limited) equivalent of @\\case { .. }@ syntax. Supports matching of exact
+-- values ('-->') and final matches for any value ('Any') or for passing value
+-- to subcomputation ('Else'). Examples:
+--
+-- @
+-- type BoolToNat = Case
+--   [ 'True  --> 0
+--   , 'False --> 1
+--   ]
+--
+-- type NatToBool = Case
+--   [ 0 --> 'False
+--   , Any   'True
+--   ]
+--
+-- type ZeroOneOrSucc = Case
+--   [ 0  --> 0
+--   , 1  --> 1
+--   , Else   ((+) 1)
+--   ]
+-- @
+data Case :: [Match j k] -> j -> Exp k
+type instance Eval (Case ms a) = Case_ ms a
+
+type family Case_ (ms :: [Match j k]) (a :: j) :: k where
+  Case_ ('Match_ a b : _ ) a = b
+  Case_ ('Match_ _ _ : ms) a = Case_ ms a
+  Case_ ('Is_ p b    : ms) a = Case_ [ 'True  --> b
+                                     , 'False --> Case_ ms a
+                                     ] (p @@ a)
+  Case_ ('Any_ b     : _ ) _ = b
+  Case_ ('Else_ f    : _ ) a = f @@ a
+
+-- | Match concrete type in 'Case'.
+type (-->) = ('Match_ :: j -> k -> Match j k)
+
+-- | Match on predicate being successful with type in 'Case'.
+type Is = ('Is_ :: (j -> Exp Bool) -> k -> Match j k)
+
+-- | Match any type in 'Case'. Should be used as a final branch.
+type Any = ('Any_ :: k -> Match j k)
+
+-- | Pass type being matched in 'Case' to subcomputation. Should be used as a
+-- final branch.
+type Else = ('Else_ :: (j -> Exp k) -> Match j k)
