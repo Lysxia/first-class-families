@@ -29,7 +29,8 @@ import Fcf.Core
 
 -- ** Monadic operations
 
-infixr 1 =<<, >>=, <=<
+infixl 1 >>=
+infixr 1 =<<, <=<
 infixl 4 <$>, <*>
 
 data Pure :: a -> Exp a
