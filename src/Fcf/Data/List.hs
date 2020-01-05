@@ -56,31 +56,27 @@ type instance Eval (UnList y f xs) = Eval (Foldr f y xs)
 
 -- Helper for the Unfoldr.
 data UnfoldrCase :: (b -> Exp (Maybe (a,b))) -> Maybe (a,b) -> Exp [a]
-type instance Eval (UnfoldrCase f ('Just '(a,b))) =
-    Eval ( '[a] ++ Eval (Unfoldr f b) )
+type instance Eval (UnfoldrCase f ('Just ab)) =
+  Eval (Fst ab) ': Eval (Unfoldr f (Eval (Snd ab)))
 type instance Eval (UnfoldrCase _ 'Nothing) = '[]
 
 -- | Type-level Unfoldr.
 --
 -- Example:
 --
--- >>> data ToThree :: Nat -> Exp (Maybe (Nat,Nat))
--- >>> type instance Eval (ToThree b) = Eval
--- >>>     (If ( Eval ( b Fcf.>= 4) )
--- >>>         (Pure Nothing)
--- >>>         (Pure (Just '(b, b TL.+ 1 )))
--- >>>     )
+-- @
+-- data ToThree :: Nat -> Exp (Maybe (Nat,Nat))
+-- type instance Eval (ToThree b) = 
+--   If ( Eval ( b Fcf.>= 4) )
+--     'Nothing
+--     ( 'Just '(b, b TL.+ 1 ))
 --
--- >>> :kind! Eval (Unfoldr ToThree 0)
+-- :kind! Eval (Unfoldr ToThree 0)
+-- @
 --
 -- See also the definition of `Replicate`.
 data Unfoldr :: (b -> Exp (Maybe (a,b))) -> b -> Exp [a]
-type instance Eval (Unfoldr f c) = Eval
-    (If (Eval (IsJust (f @@ c)))
-         ( Pure (Eval (UnfoldrCase f =<< Pure (f @@ c) ) ) )
-         ( Pure '[] )
-    )
-
+type instance Eval (Unfoldr f c) = Eval (UnfoldrCase f (f @@ c) )
 
 data (++) :: [a] -> [a] -> Exp [a]
 type instance Eval ((++) '[] ys) = ys
@@ -90,12 +86,16 @@ type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
 --
 -- Examples:
 --
--- >>> :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6])
--- >>> :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]])
-type Concat lsts = Foldr (++) '[] lsts
+-- @
+-- :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6])
+-- :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]])
+-- @
+data Concat :: [[a]] -> Exp [a]
+type instance Eval (Concat lsts) = Eval (Foldr (++) '[] lsts)
 
 -- | ConcatMap for lists.
-type ConcatMap f lst = Concat (Eval (Map f lst))
+data ConcatMap :: (a -> Exp [b]) -> [a] -> Exp [b]
+type instance Eval (ConcatMap f lst) = Eval (Concat (Eval (Map f lst)))
 
 data Filter :: (a -> Exp Bool) -> [a] -> Exp [a]
 type instance Eval (Filter _p '[]) = '[]
@@ -132,19 +132,22 @@ type instance Eval (Length '[]) = 0
 type instance Eval (Length (a ': as)) = 1 TL.+ Eval (Length as)
 
 -- Helper for the Replicate.
-data NumIter :: a -> Nat -> Nat -> Exp (Maybe (a,Nat))
-type instance Eval (NumIter a s b) = Eval
-    (If ( Eval ( b >= s) )
-        (Pure 'Nothing)
-        (Pure ('Just '( a, b TL.+ 1 )))
-    )
+data NumIter :: a -> Nat -> Exp (Maybe (a,Nat))
+type instance Eval (NumIter a s) = 
+  If ( Eval ( s > 0) )
+    ('Just '( a, s TL.- 1 ))
+    'Nothing
+
 
 -- | Type-level `Replicate` for lists.
 --
 -- Example:
 --
--- >>> :kind Eval (Replicate 4 '("ok",2))
-type Replicate n a = Unfoldr (NumIter a n) 0
+-- @
+-- :kind! Eval (Replicate 4 '("ok",2))
+-- @
+data Replicate :: Nat -> a -> Exp [a]
+type instance Eval (Replicate n a) = Eval (Unfoldr (NumIter a) n)
 
 
 data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
