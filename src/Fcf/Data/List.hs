@@ -87,7 +87,7 @@ type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
 -- Examples:
 --
 -- @
--- :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]))
+-- :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]]))
 -- :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]]))
 -- @
 data Concat :: [[a]] -> Exp [a]
