@@ -8,7 +8,7 @@ type instance FromMaybe a 'Nothing  = a
 type instance FromMaybe a ('Just b) = b
 ```
 
-With first-class-families, it translates to a `data` declaration
+With first-class-families (fcfs), it translates to a `data` declaration
 and instances for a single `Eval` family:
 
 ```haskell
@@ -19,7 +19,8 @@ type instance Eval (FromMaybe a 'Nothing)  = a
 type instance Eval (FromMaybe a ('Just b)) = b
 ```
 
-That way, the `FromMaybe` constructor can be passed to higher-order fcfs.
+That way, the `FromMaybe` constructor can be partially applied,
+and passed to higher-order fcfs such as `Map`:
 
 ```haskell
 Eval (Map (FromMaybe 0) '[ 'Just 1, 'Nothing ])  =  '[ 1, 0 ] :: [Nat]
