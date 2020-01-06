@@ -66,17 +66,17 @@ type instance Eval (UnfoldrCase _ 'Nothing) = '[]
 --
 -- @
 -- data ToThree :: Nat -> Exp (Maybe (Nat, Nat))
--- type instance Eval (ToThree b) = 
---   If (Eval (b Fcf.>= 4) )
+-- type instance Eval (ToThree b) =
+--   If (Eval (b Fcf.>= 4))
 --     'Nothing
---     ('Just '(b, b TL.+ 1 ))
+--     ('Just '(b, b TL.+ 1))
 --
 -- :kind! Eval (Unfoldr ToThree 0)
 -- @
 --
 -- See also the definition of `Replicate`.
 data Unfoldr :: (b -> Exp (Maybe (a, b))) -> b -> Exp [a]
-type instance Eval (Unfoldr f c) = Eval (UnfoldrCase f (f @@ c) )
+type instance Eval (Unfoldr f c) = Eval (UnfoldrCase f (f @@ c))
 
 data (++) :: [a] -> [a] -> Exp [a]
 type instance Eval ((++) '[] ys) = ys
@@ -133,9 +133,9 @@ type instance Eval (Length (a ': as)) = 1 TL.+ Eval (Length as)
 
 -- Helper for the Replicate.
 data NumIter :: a -> Nat -> Exp (Maybe (a, Nat))
-type instance Eval (NumIter a s) = 
-  If ( Eval (s > 0) )
-    ('Just '(a, s TL.- 1 ))
+type instance Eval (NumIter a s) =
+  If (Eval (s > 0))
+    ('Just '(a, s TL.- 1))
     'Nothing
 
 
@@ -148,7 +148,6 @@ type instance Eval (NumIter a s) =
 -- @
 data Replicate :: Nat -> a -> Exp [a]
 type instance Eval (Replicate n a) = Eval (Unfoldr (NumIter a) n)
-
 
 data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
 type instance Eval (Find _p '[]) = 'Nothing
