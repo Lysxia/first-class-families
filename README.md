@@ -26,6 +26,8 @@ and passed to higher-order fcfs such as `Map`:
 Eval (Map (FromMaybe 0) '[ 'Just 1, 'Nothing ])  =  '[ 1, 0 ] :: [Nat]
 ```
 
+Please, note that `FromMaybe 0` is partially applied type-level function.
+
 Essential language extensions:
 
 ```haskell

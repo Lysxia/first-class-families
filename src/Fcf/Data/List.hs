@@ -164,14 +164,16 @@ type instance Eval (FindIndex p (a ': as)) =
     (Pure ('Just 0))
     (Map ((+) 1) =<< FindIndex p as))
 
-type Elem a as = IsJust =<< FindIndex (TyEq a) as
+data Elem :: a -> [a] -> Exp a
+type instance Eval (Elem a as) = Eval (IsJust =<< FindIndex (TyEq a) as)
 
 -- | Find an element associated with a key.
 -- @
 -- 'Lookup' :: k -> [(k, b)] -> 'Exp' ('Maybe' b)
 -- @
-type Lookup (a :: k) (as :: [(k, b)]) =
-  (Map Snd (Eval (Find (TyEq a <=< Fst) as)) :: Exp (Maybe b))
+data Lookup :: k -> [(k, b)] -> Exp (Maybe b)
+type instance Eval (Lookup (a :: k) (as :: [(k, b)])) =
+  Eval (Map Snd (Eval (Find (TyEq a <=< Fst) as)) :: Exp (Maybe b))
 
 -- | Modify an element at a given index.
 --
@@ -194,7 +196,8 @@ type instance Eval (ZipWith f (a ': as) (b ': bs)) =
 -- @
 -- 'Zip' :: [a] -> [b] -> 'Exp' [(a, b)]
 -- @
-type Zip = ZipWith (Pure2 '(,))
+data Zip :: [a] -> [b] -> Exp [(a, b)]
+type instance Eval (Zip as bs) = Eval (ZipWith (Pure2 '(,)) as bs)
 
 data Unzip :: Exp [(a, b)] -> Exp ([a], [b])
 type instance Eval (Unzip as) = Eval (Foldr Cons2 '( '[], '[]) (Eval as))
