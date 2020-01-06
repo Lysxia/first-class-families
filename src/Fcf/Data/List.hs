@@ -100,9 +100,9 @@ type instance Eval (ConcatMap f lst) = Eval (Concat (Eval (Map f lst)))
 data Filter :: (a -> Exp Bool) -> [a] -> Exp [a]
 type instance Eval (Filter _p '[]) = '[]
 type instance Eval (Filter p (a ': as)) =
-  If (Eval (p a))
-    (a ': Eval (Filter p as))
-    (Eval (Filter p as))
+  Eval (If (Eval (p a))
+    ('(:) a <$> Filter p as)
+    (Filter p as))
 
 data Head :: [a] -> Exp (Maybe a)
 type instance Eval (Head '[]) = 'Nothing
