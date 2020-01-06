@@ -55,7 +55,7 @@ data UnList :: b -> (a -> b -> Exp b) -> [a] -> Exp b
 type instance Eval (UnList y f xs) = Eval (Foldr f y xs)
 
 -- Helper for the Unfoldr.
-data UnfoldrCase :: (b -> Exp (Maybe (a,b))) -> Maybe (a,b) -> Exp [a]
+data UnfoldrCase :: (b -> Exp (Maybe (a, b))) -> Maybe (a, b) -> Exp [a]
 type instance Eval (UnfoldrCase f ('Just ab)) =
   Eval (Fst ab) ': Eval (Unfoldr f (Eval (Snd ab)))
 type instance Eval (UnfoldrCase _ 'Nothing) = '[]
@@ -65,17 +65,17 @@ type instance Eval (UnfoldrCase _ 'Nothing) = '[]
 -- Example:
 --
 -- @
--- data ToThree :: Nat -> Exp (Maybe (Nat,Nat))
+-- data ToThree :: Nat -> Exp (Maybe (Nat, Nat))
 -- type instance Eval (ToThree b) = 
---   If ( Eval ( b Fcf.>= 4) )
+--   If (Eval (b Fcf.>= 4) )
 --     'Nothing
---     ( 'Just '(b, b TL.+ 1 ))
+--     ('Just '(b, b TL.+ 1 ))
 --
 -- :kind! Eval (Unfoldr ToThree 0)
 -- @
 --
 -- See also the definition of `Replicate`.
-data Unfoldr :: (b -> Exp (Maybe (a,b))) -> b -> Exp [a]
+data Unfoldr :: (b -> Exp (Maybe (a, b))) -> b -> Exp [a]
 type instance Eval (Unfoldr f c) = Eval (UnfoldrCase f (f @@ c) )
 
 data (++) :: [a] -> [a] -> Exp [a]
@@ -87,8 +87,8 @@ type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
 -- Examples:
 --
 -- @
--- :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6])
--- :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]])
+-- :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]))
+-- :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]]))
 -- @
 data Concat :: [[a]] -> Exp [a]
 type instance Eval (Concat lsts) = Eval (Foldr (++) '[] lsts)
@@ -132,10 +132,10 @@ type instance Eval (Length '[]) = 0
 type instance Eval (Length (a ': as)) = 1 TL.+ Eval (Length as)
 
 -- Helper for the Replicate.
-data NumIter :: a -> Nat -> Exp (Maybe (a,Nat))
+data NumIter :: a -> Nat -> Exp (Maybe (a, Nat))
 type instance Eval (NumIter a s) = 
-  If ( Eval ( s > 0) )
-    ('Just '( a, s TL.- 1 ))
+  If ( Eval (s > 0) )
+    ('Just '(a, s TL.- 1 ))
     'Nothing
 
 
@@ -144,7 +144,7 @@ type instance Eval (NumIter a s) =
 -- Example:
 --
 -- @
--- :kind! Eval (Replicate 4 '("ok",2))
+-- :kind! Eval (Replicate 4 '("ok", 2))
 -- @
 data Replicate :: Nat -> a -> Exp [a]
 type instance Eval (Replicate n a) = Eval (Unfoldr (NumIter a) n)
