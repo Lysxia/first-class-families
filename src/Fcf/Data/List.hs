@@ -46,6 +46,10 @@ import Fcf.Data.Common
 import Fcf.Data.Nat
 import Fcf.Utils
 
+-- $
+-- >>> import Fcf.Core
+-- >>> import Fcf.Combinators
+
 data Cons :: a -> [a] -> Exp [a]
 type instance Eval (Cons a as) = a ': as
 
@@ -67,15 +71,17 @@ type instance Eval (UnfoldrCase _ 'Nothing) = '[]
 --
 -- Example:
 --
--- @
--- data ToThree :: Nat -> Exp (Maybe (Nat, Nat))
+-- >>> data ToThree :: Nat -> Exp (Maybe (Nat, Nat))
+-- >>> :{
 -- type instance Eval (ToThree b) =
 --   If (Eval (b Fcf.>= 4))
 --     'Nothing
 --     ('Just '(b, b TL.+ 1))
+-- :}
 --
--- :kind! Eval (Unfoldr ToThree 0)
--- @
+-- >>> :kind! Eval (Unfoldr ToThree 0)
+-- Eval (Unfoldr ToThree 0) :: [Nat]
+-- = '[0, 1, 2, 3]
 --
 -- See also the definition of `Replicate`.
 data Unfoldr :: (b -> Exp (Maybe (a, b))) -> b -> Exp [a]
@@ -89,10 +95,13 @@ type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
 --
 -- Examples:
 --
--- @
--- :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]]))
--- :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]]))
--- @
+-- >>> :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]]))
+-- Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]])) :: [Nat]
+-- = '[1, 2, 3, 4, 5, 6]
+-- >>> :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]]))
+-- Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]])) :: [*]
+-- = '[Int, Maybe Int, Maybe String, Either Double Int]
+--
 data Concat :: [[a]] -> Exp [a]
 type instance Eval (Concat lsts) = Eval (Foldr (++) '[] lsts)
 
@@ -146,9 +155,9 @@ type instance Eval (NumIter a s) =
 --
 -- Example:
 --
--- @
--- :kind! Eval (Replicate 4 '("ok", 2))
--- @
+-- >>> :kind! Eval (Replicate 4 '("ok", 2))
+-- Eval (Replicate 4 '("ok", 2)) :: [(TL.Symbol, Nat)]
+-- = '[ '("ok", 2), '("ok", 2), '("ok", 2), '("ok", 2)]
 data Replicate :: Nat -> a -> Exp [a]
 type instance Eval (Replicate n a) = Eval (Unfoldr (NumIter a) n)
 
@@ -171,9 +180,6 @@ data Elem :: a -> [a] -> Exp a
 type instance Eval (Elem a as) = Eval (IsJust =<< FindIndex (TyEq a) as)
 
 -- | Find an element associated with a key.
--- @
--- 'Lookup' :: k -> [(k, b)] -> 'Exp' ('Maybe' b)
--- @
 data Lookup :: k -> [(k, b)] -> Exp (Maybe b)
 type instance Eval (Lookup (a :: k) (as :: [(k, b)])) =
   Eval (Map Snd (Eval (Find (TyEq a <=< Fst) as)) :: Exp (Maybe b))
@@ -195,10 +201,6 @@ type instance Eval (ZipWith _f _as '[]) = '[]
 type instance Eval (ZipWith f (a ': as) (b ': bs)) =
   Eval (f a b) ': Eval (ZipWith f as bs)
 
--- |
--- @
--- 'Zip' :: [a] -> [b] -> 'Exp' [(a, b)]
--- @
 data Zip :: [a] -> [b] -> Exp [(a, b)]
 type instance Eval (Zip as bs) = Eval (ZipWith (Pure2 '(,)) as bs)
 
@@ -213,9 +215,9 @@ type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
 --
 -- === Example
 --
--- @
--- :kind! Eval (Take 2 '[1,2,3,4,5])
--- @
+-- >>> :kind! Eval (Take 2 '[1,2,3,4,5])
+-- Eval (Take 2 '[1,2,3,4,5]) :: [Nat]
+-- = '[1, 2]
 data Take :: Nat -> [a] -> Exp [a]
 type instance Eval (Take n as) = Take_ n as
 
@@ -229,9 +231,9 @@ type family Take_ (n :: Nat) (xs :: [a]) :: [a] where
 --
 -- === Example
 --
--- @
--- :kind! Eval (Drop 2 '[1,2,3,4,5])
--- @
+-- >>> :kind! Eval (Drop 2 '[1,2,3,4,5])
+-- Eval (Drop 2 '[1,2,3,4,5]) :: [Nat]
+-- = '[3, 4, 5]
 data Drop :: Nat -> [a] -> Exp [a]
 type instance Eval (Drop n as) = Drop_ n as
 
@@ -251,9 +253,9 @@ type instance Eval (Rev (x ': xs) ys) = Eval (Rev xs (x ': ys))
 --
 -- === Example
 --
--- @
--- :kind! Eval (Reverse '[1,2,3,4,5])
--- @
+-- >>> :kind! Eval (Reverse '[1,2,3,4,5])
+-- Eval (Reverse '[1,2,3,4,5]) :: [Nat]
+-- = '[5, 4, 3, 2, 1]
 data Reverse :: [a] -> Exp [a]
 type instance Eval (Reverse l) = Eval (Rev l '[])
 
