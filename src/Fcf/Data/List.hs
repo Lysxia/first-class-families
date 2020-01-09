@@ -209,23 +209,6 @@ data Cons2 :: (a, b) -> ([a], [b]) -> Exp ([a], [b])
 type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
 
 
--- Helper for the Take. This corresponds to the unsafeTake in the data list lib.
-data UtakeStop :: Nat -> [a] -> Exp [a]
-type instance Eval (UtakeStop 0 _)         = '[]
-type instance Eval (UtakeStop 1 (a ': as)) = '[a]
-
--- Helper for the Take. This corresponds to the unsafeTake in the data list lib.
-data Utake :: Nat -> [a] -> Exp [a]
--- As the following refuses to compile, we use UtakeStop-helper.
--- type instance Eval (Utake 0 (a ': as)) = '[]
--- type instance Eval (Utake 1 (a ': as)) = '[a]
--- type instance Eval (Utake m (a ': as)) = Eval ('(:) a <$> (Utake (m TL.- 1) as))
-type instance Eval (Utake n (a ': as)) = Eval
-  (If (Eval (n < 2))
-    (UtakeStop n (a ': as))
-    ('(:) a <$> (Utake (n TL.- 1) as))
-  )
-
 -- | Type-level list take.
 --
 -- === Example
@@ -234,23 +217,13 @@ type instance Eval (Utake n (a ': as)) = Eval
 -- :kind! Eval (Take 2 '[1,2,3,4,5])
 -- @
 data Take :: Nat -> [a] -> Exp [a]
-type instance Eval (Take n as) = Eval
-  (If (Eval (n > 0))
-    (Utake n as)
-    (Pure '[])
-  )
+type instance Eval (Take n as) = Take_ n as
 
--- Helper for the Drop. This corresponds to the unsafeDrop in the data list lib.
-data UdropStop :: Nat -> [a] -> Exp [a]
-type instance Eval (UdropStop 0 _ )        = '[]
-type instance Eval (UdropStop 1 (a ': as)) = as
--- Helper for the Drop. This corresponds to the unsafeDrop in the data list lib.
-data Udrop :: Nat -> [a] -> Exp [a]
-type instance Eval (Udrop n (a ': as)) = Eval
-  (If (Eval (n < 2))
-    (UdropStop n (a ': as))
-    (Udrop (n TL.- 1) as)
-  )
+type family Take_ (n :: Nat) (xs :: [a]) :: [a] where
+  Take_ 0 _         = '[]
+  Take_ _ '[]       = '[]
+  Take_ n (x ': xs) = x ': Take_ (n TL.- 1) xs
+
 
 -- | Type-level list drop.
 --
@@ -260,17 +233,18 @@ type instance Eval (Udrop n (a ': as)) = Eval
 -- :kind! Eval (Drop 2 '[1,2,3,4,5])
 -- @
 data Drop :: Nat -> [a] -> Exp [a]
-type instance Eval (Drop n as) = Eval
-  (If (Eval (n > 0))
-    (Udrop n as)
-    (Pure as)
-  )
+type instance Eval (Drop n as) = Drop_ n as
+
+type family Drop_ (n :: Nat) (xs :: [a]) :: [a] where
+  Drop_ 0 xs        = xs
+  Drop_ _ '[]       = '[]
+  Drop_ n (x ': xs) = Drop_ (n TL.- 1) xs
 
 
 -- Helper for Reverse. This corresponds to rev in the data list lib.
 data Rev :: [a] -> [a] -> Exp [a]
-type instance Eval (Rev '[]       a) = a
-type instance Eval (Rev (x ': xs) a) = Eval (Rev xs (x ': a))
+type instance Eval (Rev '[]       ys) = ys
+type instance Eval (Rev (x ': xs) ys) = Eval (Rev xs (x ': ys))
 
 
 -- | Type-level list reverse.
