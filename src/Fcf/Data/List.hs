@@ -69,7 +69,7 @@ type instance Eval (UnfoldrCase _ 'Nothing) = '[]
 
 -- | Type-level Unfoldr.
 --
--- Example:
+-- === __Example__
 --
 -- >>> data ToThree :: Nat -> Exp (Maybe (Nat, Nat))
 -- >>> :{
@@ -93,7 +93,7 @@ type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
 
 -- | Concat for lists.
 --
--- Examples:
+-- === __Example__
 --
 -- >>> :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]]))
 -- Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]])) :: [Nat]
@@ -153,7 +153,7 @@ type instance Eval (NumIter a s) =
 
 -- | Type-level `Replicate` for lists.
 --
--- Example:
+-- === __Example__
 --
 -- >>> :kind! Eval (Replicate 4 '("ok", 2))
 -- Eval (Replicate 4 '("ok", 2)) :: [(TL.Symbol, Nat)]
@@ -213,7 +213,7 @@ type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
 
 -- | Type-level list take.
 --
--- === Example
+-- === __Example__
 --
 -- >>> :kind! Eval (Take 2 '[1,2,3,4,5])
 -- Eval (Take 2 '[1,2,3,4,5]) :: [Nat]
@@ -229,7 +229,7 @@ type family Take_ (n :: Nat) (xs :: [a]) :: [a] where
 
 -- | Type-level list drop.
 --
--- === Example
+-- === __Example__
 --
 -- >>> :kind! Eval (Drop 2 '[1,2,3,4,5])
 -- Eval (Drop 2 '[1,2,3,4,5]) :: [Nat]
@@ -251,7 +251,7 @@ type instance Eval (Rev (x ': xs) ys) = Eval (Rev xs (x ': ys))
 
 -- | Type-level list reverse.
 --
--- === Example
+-- === __Example__
 --
 -- >>> :kind! Eval (Reverse '[1,2,3,4,5])
 -- Eval (Reverse '[1,2,3,4,5]) :: [Nat]
