@@ -32,6 +32,9 @@ module Fcf.Data.List
   , Zip
   , Unzip
   , Cons2
+  , Take
+  , Drop
+  , Reverse
   ) where
 
 import qualified GHC.TypeLits as TL
@@ -204,4 +207,53 @@ type instance Eval (Unzip as) = Eval (Foldr Cons2 '( '[], '[]) (Eval as))
 
 data Cons2 :: (a, b) -> ([a], [b]) -> Exp ([a], [b])
 type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
+
+
+-- | Type-level list take.
+--
+-- === Example
+--
+-- @
+-- :kind! Eval (Take 2 '[1,2,3,4,5])
+-- @
+data Take :: Nat -> [a] -> Exp [a]
+type instance Eval (Take n as) = Take_ n as
+
+type family Take_ (n :: Nat) (xs :: [a]) :: [a] where
+  Take_ 0 _         = '[]
+  Take_ _ '[]       = '[]
+  Take_ n (x ': xs) = x ': Take_ (n TL.- 1) xs
+
+
+-- | Type-level list drop.
+--
+-- === Example
+--
+-- @
+-- :kind! Eval (Drop 2 '[1,2,3,4,5])
+-- @
+data Drop :: Nat -> [a] -> Exp [a]
+type instance Eval (Drop n as) = Drop_ n as
+
+type family Drop_ (n :: Nat) (xs :: [a]) :: [a] where
+  Drop_ 0 xs        = xs
+  Drop_ _ '[]       = '[]
+  Drop_ n (x ': xs) = Drop_ (n TL.- 1) xs
+
+
+-- Helper for Reverse. This corresponds to rev in the data list lib.
+data Rev :: [a] -> [a] -> Exp [a]
+type instance Eval (Rev '[]       ys) = ys
+type instance Eval (Rev (x ': xs) ys) = Eval (Rev xs (x ': ys))
+
+
+-- | Type-level list reverse.
+--
+-- === Example
+--
+-- @
+-- :kind! Eval (Reverse '[1,2,3,4,5])
+-- @
+data Reverse :: [a] -> Exp [a]
+type instance Eval (Reverse l) = Eval (Rev l '[])
 
