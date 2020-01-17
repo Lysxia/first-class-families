@@ -11,9 +11,25 @@ module Fcf.Classes
   , Bimap
   ) where
 
+
 import Fcf.Core
 
+
+-- $
+-- >>> import Fcf.Core
+
+
 -- | Type-level 'fmap' for type-level functors.
+--
+-- === __Example__
+--
+-- >>> import Fcf.Data.Nat
+-- >>> import qualified GHC.TypeLits as TL
+-- >>> data AddMul :: Nat -> Nat -> Exp Nat
+-- >>> type instance Eval (AddMul x y) = (x TL.+ y) TL.* (x TL.+ y)
+-- >>> :kind! Eval (Map (AddMul 2) '[0, 1, 2, 3, 4])
+-- Eval (Map (AddMul 2) '[0, 1, 2, 3, 4]) :: [Nat]
+-- = '[4, 9, 16, 25, 36]
 data Map :: (a -> Exp b) -> f a -> Exp (f b)
 
 -- []
