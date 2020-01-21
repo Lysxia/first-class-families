@@ -34,6 +34,8 @@ module Fcf.Data.List
   , Cons2
   , Take
   , Drop
+  , TakeWhile
+  , DropWhile
   , Reverse
   ) where
 
@@ -49,10 +51,30 @@ import Fcf.Utils
 -- $
 -- >>> import Fcf.Core
 -- >>> import Fcf.Combinators
+-- >>> import qualified GHC.TypeLits as TL
 
+
+-- | Append an element for type-level lists.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (Cons 1 '[2, 3])
+-- Eval (Cons 1 '[2, 3]) :: [Nat]
+-- = '[1, 2, 3]
+-- >>> :kind! Eval (Cons Int '[Char, Maybe Double])
+-- Eval (Cons Int '[Char, Maybe Double]) :: [*]
+-- = '[Int, Char, Maybe Double]
+--
 data Cons :: a -> [a] -> Exp [a]
 type instance Eval (Cons a as) = a ': as
 
+-- | Foldr for type-level lists.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (Foldr (+) 0 '[1, 2, 3, 4])
+-- Eval (Foldr (+) 0 '[1, 2, 3, 4]) :: Nat
+-- = 10
 data Foldr :: (a -> b -> Exp b) -> b -> [a] -> Exp b
 type instance Eval (Foldr f y '[]) = y
 type instance Eval (Foldr f y (x ': xs)) = Eval (f x (Eval (Foldr f y xs)))
@@ -87,6 +109,14 @@ type instance Eval (UnfoldrCase _ 'Nothing) = '[]
 data Unfoldr :: (b -> Exp (Maybe (a, b))) -> b -> Exp [a]
 type instance Eval (Unfoldr f c) = Eval (UnfoldrCase f (f @@ c))
 
+-- | Type-level list catenation.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval ('[1, 2] ++ '[3, 4])
+-- Eval ('[1, 2] ++ '[3, 4]) :: [Nat]
+-- = '[1, 2, 3, 4]
+--
 data (++) :: [a] -> [a] -> Exp [a]
 type instance Eval ((++) '[] ys) = ys
 type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
@@ -176,7 +206,18 @@ type instance Eval (FindIndex p (a ': as)) =
     (Pure ('Just 0))
     (Map ((+) 1) =<< FindIndex p as))
 
-data Elem :: a -> [a] -> Exp a
+-- | Type-level `Elem` for lists.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (Elem 1 '[1,2,3])
+-- Eval (Elem 1 '[1,2,3]) :: Bool
+-- = 'True
+-- >>> :kind! Eval (Elem 1 '[2,3])
+-- Eval (Elem 1 '[2,3]) :: Bool
+-- = 'False
+--
+data Elem :: a -> [a] -> Exp Bool
 type instance Eval (Elem a as) = Eval (IsJust =<< FindIndex (TyEq a) as)
 
 -- | Find an element associated with a key.
@@ -226,7 +267,6 @@ type family Take_ (n :: Nat) (xs :: [a]) :: [a] where
   Take_ _ '[]       = '[]
   Take_ n (x ': xs) = x ': Take_ (n TL.- 1) xs
 
-
 -- | Type-level list drop.
 --
 -- === __Example__
@@ -241,6 +281,34 @@ type family Drop_ (n :: Nat) (xs :: [a]) :: [a] where
   Drop_ 0 xs        = xs
   Drop_ _ '[]       = '[]
   Drop_ n (x ': xs) = Drop_ (n TL.- 1) xs
+
+-- | Type-level list takeWhile.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (TakeWhile ((>=) 3) '[1, 2, 3, 4, 5])
+-- Eval (TakeWhile ((>=) 3) '[1, 2, 3, 4, 5]) :: [Nat]
+-- = '[1, 2, 3]
+data TakeWhile :: (a -> Exp Bool) -> [a] -> Exp [a]
+type instance Eval (TakeWhile p '[]) = '[]
+type instance Eval (TakeWhile p (x ': xs)) =
+  Eval (If (Eval (p x))
+      ('(:) x <$> TakeWhile p xs)
+      (Pure '[]))
+
+-- | Type-level list dropWhile.
+--
+-- === __Example__
+--
+-- :kind! Eval (DropWhile ((>=) 3) '[1, 2, 3, 4, 5])
+-- Eval (DropWhile ((>=) 3) '[1, 2, 3, 4, 5]) :: [Nat]
+-- = '[4, 5]
+data DropWhile :: (a -> Exp Bool) -> [a] -> Exp [a]
+type instance Eval (DropWhile p '[]) = '[]
+type instance Eval (DropWhile p (x ': xs)) =
+  Eval (If (Eval (p x))
+      (DropWhile p xs)
+      (Pure (x ': xs)))
 
 
 -- Helper for Reverse. This corresponds to rev in the data list lib.
