@@ -1,6 +1,13 @@
+# 0.7.0.0
+
+- Add `Unfoldr`, `Concat`, `ConcatMap`, `Replicate`, `Take`, `Drop`,
+  `TakeWhile`, `DropWhile`, `Reverse` to `Data.List`. (gspia)
+- Change `Elem`, `Lookup`, `Zip` to be `data` instead of `type` synonyms.
+- Fix performance of `Filter` and `Find`.
+
 # 0.6.0.0
 
-- Add `Fcf.Utils.Case` and `(Fcf.Combinators.>>=)`
+- Add `Fcf.Utils.Case` and `(Fcf.Combinators.>>=)` (TheMatten)
 - Deprecate `Fcf.Bool.Guarded`
 - GHC 8.8 compatibility
 
