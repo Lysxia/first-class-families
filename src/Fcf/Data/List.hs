@@ -194,9 +194,9 @@ type instance Eval (Replicate n a) = Eval (Unfoldr (NumIter a) n)
 data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
 type instance Eval (Find _p '[]) = 'Nothing
 type instance Eval (Find p (a ': as)) =
-  If (Eval (p a))
-    ('Just a)
-    (Eval (Find p as))
+  Eval (If (Eval (p a))
+    (Pure ('Just a))
+    (Find p as))
 
 -- | Find the index of an element satisfying the predicate.
 data FindIndex :: (a -> Exp Bool) -> [a] -> Exp (Maybe Nat)
