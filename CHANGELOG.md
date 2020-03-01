@@ -1,13 +1,34 @@
+# 0.8.0.0
+
+- Add modules
+    + `Fcf.Data.Symbol` (currently just reexports `Symbol`) (thanks to gspia)
+    + `Fcf.Data.Function`
+    + "Overloaded type families" ("type-level type classes")
+        * `Fcf.Class.Ord`
+        * `Fcf.Class.Monoid`
+        * `Fcf.Class.Monoid.Types` (which exports just an `Endo a` to wrap `a -> Exp a`)
+        * `Fcf.Class.Functor`
+        * `Fcf.Class.Bifunctor`
+        * `Fcf.Class.Foldable`
+
+- Add functions in `Fcf.Data.List`:
+  `Intersperse`, `Intercalate`, `Span`, `Break`, `Tails`, `IsPrefixOf`,
+  `IsSuffixOf`, `IsInfixOf`, `Partition`.
+- Generalize `Foldr`, `Concat` and `ConcatMap` to foldable types.
+
+- Remove deprecated `Guarded`, `Guard((:=))`, `Otherwise`.
+- Deprecate `Fcf.Classes`
+
 # 0.7.0.0
 
 - Add `Unfoldr`, `Concat`, `ConcatMap`, `Replicate`, `Take`, `Drop`,
-  `TakeWhile`, `DropWhile`, `Reverse` to `Data.List`. (gspia)
+  `TakeWhile`, `DropWhile`, `Reverse` to `Data.List`. (thanks to gspia)
 - Change `Elem`, `Lookup`, `Zip` to be `data` instead of `type` synonyms.
 - Fix performance of `Filter` and `Find`.
 
 # 0.6.0.0
 
-- Add `Fcf.Utils.Case` and `(Fcf.Combinators.>>=)` (TheMatten)
+- Add `Fcf.Utils.Case` and `(Fcf.Combinators.>>=)` (thanks to TheMatten)
 - Deprecate `Fcf.Bool.Guarded`
 - GHC 8.8 compatibility
 
@@ -24,7 +45,7 @@
 
 # 0.4.0.0
 
-- New functions (blmage)
+- New functions (thanks to blmage)
 
     + `LiftM`, `LiftM2`, `LiftM3`
     + `(<=)`, `(>=)`, `(<)`, `(>)`
@@ -36,11 +57,11 @@
 
 # 0.3.0.0
 
-- More new functions, (isovector)
+- More new functions, (thanks to isovector)
 
 # 0.2.0.0
 
-- A whole bunch of basic functions (isovector)
+- A whole bunch of basic functions (thanks to isovector)
 - Remove `Traverse` (now `Map`), `BimapPair`, `BimapEither` (now `Bimap`)
 
 # 0.1.0.0
