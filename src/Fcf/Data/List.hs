@@ -10,7 +10,6 @@
 module Fcf.Data.List
   ( -- * Basic functions
     type (++)
-  , type (==)
   , Head
   , Last
   , Tail
@@ -102,20 +101,6 @@ import Fcf.Utils (If, TyEq)
 --
 data (++) :: [a] -> [a] -> Exp [a]
 type instance Eval ((++) xs ys) = xs <> ys
-
--- | Equality tests for list equality.
---
--- === __Example__
---
--- >>> :kind! Eval ('[1,2,3] == '[1,2,3])
--- Eval ('[1,2,3] == '[1,2,3]) :: Bool
--- = 'True
---
--- >>> :kind! Eval ('[1,2,3] == '[1,3,2])
--- Eval ('[1,2,3] == '[1,3,2]) :: Bool
--- = 'False
-data (==) :: [a] -> [a] -> Exp Bool
-type instance Eval ((==) as bs) = Eval (And =<< ZipWith TyEq as bs)
 
 
 data Head :: [a] -> Exp (Maybe a)
