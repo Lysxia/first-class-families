@@ -18,6 +18,12 @@ import Fcf.Combinators (Pure, type (<=<))
 import Fcf.Class.Monoid
 
 -- | Endofunctions.
+--
+-- === __Details__
+--
+-- This is is used in the default implementation of
+-- 'Fcf.Class.Foldable.Foldr' in terms of
+-- 'Fcf.Class.Foldable.FoldMap'.
 newtype Endo a = Endo (a -> Exp a)
 
 -- | Inverse of the 'Endo' constructor.
