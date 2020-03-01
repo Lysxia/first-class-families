@@ -13,6 +13,10 @@
 module Fcf.Class.Ord
   ( -- * Order
     Compare
+  , type (<=)
+  , type (>=)
+  , type (<)
+  , type (>)
 
     -- * Equality
   , TyEq
