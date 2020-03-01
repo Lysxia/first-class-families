@@ -125,6 +125,11 @@ type (-->) = ('Match_ :: j -> k -> Match j k)
 type Is = ('Is_ :: (j -> Exp Bool) -> k -> Match j k)
 
 -- | Match any type in 'Case'. Should be used as a final branch.
+--
+-- Note: this identifier conflicts with 'Fcf.Class.Foldable.Any' (from "Fcf.Class.Foldable")
+-- 'Data.Monoid.Any' (from "Data.Monoid"), and 'GHC.Exts.Any' (from "GHC.Exts").
+--
+-- We recommend importing this one qualified.
 type Any = ('Any_ :: k -> Match j k)
 
 -- | Pass type being matched in 'Case' to subcomputation. Should be used as a

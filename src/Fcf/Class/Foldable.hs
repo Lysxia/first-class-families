@@ -173,11 +173,14 @@ type instance Eval (All p lst) = Eval (Foldr (Bicomap p Pure (&&)) 'True lst)
 -- >>> :kind! Eval (Or '[ 'False, 'False])
 -- Eval (Or '[ 'False, 'False]) :: Bool
 -- = 'False
-data Or :: [Bool] -> Exp Bool
+data Or :: t Bool -> Exp Bool
 type instance Eval (Or lst) = Eval (Foldr (||) 'False lst)
 
 
 -- | Whether any element of the list satisfies a predicate.
+--
+-- Note: this identifier conflicts with 'Fcf.Utils.Any' (from "Fcf.Utils"),
+-- 'Data.Monoid.Any' (from "Data.Monoid"), and 'GHC.Exts.Any' (from "GHC.Exts").
 --
 -- === __Example__
 --
