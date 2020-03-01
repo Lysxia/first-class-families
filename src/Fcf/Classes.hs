@@ -3,6 +3,7 @@
 
 -- | Overloaded functions.
 module Fcf.Classes
+  {-# DEPRECATED "Use Fcf.Class.Functor or Fcf.Class.Bifunctor instead." #-}
   ( Map
   , Bimap
   ) where
