@@ -152,5 +152,6 @@ import Fcf.Data.Bool
 import Fcf.Data.Common
 import Fcf.Data.List
 import Fcf.Data.Nat
-import Fcf.Classes
+import Fcf.Class.Functor
+import Fcf.Class.Bifunctor
 import Fcf.Utils
