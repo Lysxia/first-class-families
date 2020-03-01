@@ -34,8 +34,10 @@ library
     Fcf.Data.Symbol
     Fcf.Classes
     Fcf.Class.Bifunctor
+    Fcf.Class.Foldable
     Fcf.Class.Functor
     Fcf.Class.Monoid
+    Fcf.Class.Monoid.Types
     Fcf.Class.Ord
     Fcf.Utils
   build-depends:
