@@ -90,7 +90,7 @@ import Fcf.Utils (If, TyEq)
 -- >>> import qualified GHC.TypeLits as TL
 
 
--- | Type-level list catenation.
+-- | List catenation.
 --
 -- === __Example__
 --
@@ -102,7 +102,7 @@ data (++) :: [a] -> [a] -> Exp [a]
 type instance Eval ((++) '[] ys) = ys
 type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
 
--- | Equal tests for list equality.
+-- | Equality tests for list equality.
 --
 -- === __Example__
 --
@@ -145,7 +145,7 @@ type instance Eval (Length '[]) = 0
 type instance Eval (Length (a ': as)) = 1 TL.+ Eval (Length as)
 
 
--- | Append an element for type-level lists.
+-- | Append an element to a list.
 --
 -- === __Example__
 --
@@ -159,10 +159,11 @@ type instance Eval (Length (a ': as)) = 1 TL.+ Eval (Length as)
 data Cons :: a -> [a] -> Exp [a]
 type instance Eval (Cons a as) = a ': as
 
+-- | Append elements to two lists. Used in the definition of 'Unzip'.
 data Cons2 :: (a, b) -> ([a], [b]) -> Exp ([a], [b])
 type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
 
--- | Snoc for type-level lists.
+-- | Append an element to the end of a list.
 --
 -- === __Example__
 --
@@ -179,7 +180,7 @@ type instance Eval (Rev '[]       ys) = ys
 type instance Eval (Rev (x ': xs) ys) = Eval (Rev xs (x ': ys))
 
 
--- | Type-level list reverse.
+-- | Reverse a list.
 --
 -- === __Example__
 --
@@ -189,7 +190,7 @@ type instance Eval (Rev (x ': xs) ys) = Eval (Rev xs (x ': ys))
 data Reverse :: [a] -> Exp [a]
 type instance Eval (Reverse l) = Eval (Rev l '[])
 
--- | Intersperse for type-level lists.
+-- | Intersperse a separator between elements of a list.
 --
 -- === __Example__
 --
@@ -200,12 +201,12 @@ data Intersperse :: a -> [a] -> Exp [a]
 type instance Eval (Intersperse _   '[]      ) = '[]
 type instance Eval (Intersperse sep (x ': xs)) = x ': Eval (PrependToAll sep xs)
 
--- helper for Intersperse
+-- | Helper for Intersperse
 data PrependToAll :: a -> [a] -> Exp [a]
 type instance Eval (PrependToAll _   '[]      ) = '[]
 type instance Eval (PrependToAll sep (x ': xs)) = sep ': x ': Eval (PrependToAll sep xs)
 
--- | Intercalate for type-level lists.
+-- | Join a list of words separated by some word.
 --
 -- === __Example__
 --
@@ -216,7 +217,7 @@ data Intercalate :: [a] -> [[a]] -> Exp [a]
 type instance Eval (Intercalate xs xss) = Eval (Concat =<< Intersperse xs xss)
 
 
--- | Foldr for type-level lists.
+-- | Right fold.
 --
 -- === __Example__
 --
@@ -227,12 +228,12 @@ data Foldr :: (a -> b -> Exp b) -> b -> [a] -> Exp b
 type instance Eval (Foldr f y '[]) = y
 type instance Eval (Foldr f y (x ': xs)) = Eval (f x (Eval (Foldr f y xs)))
 
--- | N.B.: This is equivalent to a 'Foldr' flipped.
+-- | This is 'Foldr' with its argument flipped.
 data UnList :: b -> (a -> b -> Exp b) -> [a] -> Exp b
 type instance Eval (UnList y f xs) = Eval (Foldr f y xs)
 
 
--- | Concat for lists.
+-- | Concatenate a list of lists.
 --
 -- === __Example__
 --
@@ -246,12 +247,12 @@ type instance Eval (UnList y f xs) = Eval (Foldr f y xs)
 data Concat :: [[a]] -> Exp [a]
 type instance Eval (Concat lsts) = Eval (Foldr (++) '[] lsts)
 
--- | ConcatMap for lists.
+-- | Map a function and concatenate the results.
 data ConcatMap :: (a -> Exp [b]) -> [a] -> Exp [b]
 type instance Eval (ConcatMap f lst) = Eval (Concat (Eval (Map f lst)))
 
 
--- | Give true if all of the booleans in the list are true.
+-- | Give @True@ if all of the booleans in the list are @True@.
 --
 -- === __Example__
 --
@@ -266,7 +267,7 @@ data And :: [Bool] -> Exp Bool
 type instance Eval (And lst) = Eval (Foldr (&&) 'True lst)
 
 
--- | Type-level All.
+-- | Whether all elements of the list satisfy a predicate.
 --
 -- === __Example__
 --
@@ -281,7 +282,7 @@ data All :: (a -> Exp Bool) -> [a] -> Exp Bool
 type instance Eval (All p lst) = Eval (And =<< Map p lst)
 
 
--- | Give true if any of the booleans in the list is true.
+-- | Give @True@ if any of the booleans in the list are @True@.
 --
 -- === __Example__
 --
@@ -296,7 +297,7 @@ data Or :: [Bool] -> Exp Bool
 type instance Eval (Or lst) = Eval (Foldr (||) 'False lst)
 
 
--- | Type-level Any.
+-- | Whether any element of the list satisfies a predicate.
 --
 -- === __Example__
 --
@@ -311,7 +312,7 @@ data Any :: (a -> Exp Bool) -> [a] -> Exp Bool
 type instance Eval (Any p lst) = Eval (Or =<< Map p lst)
 
 
--- | Sum a Nat-list.
+-- | Sum a @Nat@-list.
 --
 -- === __Example__
 --
@@ -328,7 +329,7 @@ type instance Eval (UnfoldrCase f ('Just ab)) =
   Eval (Fst ab) ': Eval (Unfoldr f (Eval (Snd ab)))
 type instance Eval (UnfoldrCase _ 'Nothing) = '[]
 
--- | Type-level Unfoldr.
+-- | Unfold a generator into a list.
 --
 -- === __Example__
 --
@@ -356,7 +357,7 @@ type instance Eval (NumIter a s) =
     ('Just '(a, s TL.- 1))
     'Nothing
 
--- | Type-level `Replicate` for lists.
+-- | Repeat the same element in a list.
 --
 -- === __Example__
 --
@@ -367,7 +368,7 @@ data Replicate :: Nat -> a -> Exp [a]
 type instance Eval (Replicate n a) = Eval (Unfoldr (NumIter a) n)
 
 
--- | Type-level list take.
+-- | Take a prefix of fixed length.
 --
 -- === __Example__
 --
@@ -382,7 +383,7 @@ type family Take_ (n :: Nat) (xs :: [a]) :: [a] where
   Take_ _ '[]       = '[]
   Take_ n (x ': xs) = x ': Take_ (n TL.- 1) xs
 
--- | Type-level list drop.
+-- | Drop a prefix of fixed length, evaluate to the remaining suffix.
 --
 -- === __Example__
 --
@@ -397,7 +398,7 @@ type family Drop_ (n :: Nat) (xs :: [a]) :: [a] where
   Drop_ _ '[]       = '[]
   Drop_ n (x ': xs) = Drop_ (n TL.- 1) xs
 
--- | Type-level list takeWhile.
+-- | Take the longest prefix of elements satisfying a predicate.
 --
 -- === __Example__
 --
@@ -411,7 +412,8 @@ type instance Eval (TakeWhile p (x ': xs)) =
       ('(:) x <$> TakeWhile p xs)
       (Pure '[]))
 
--- | Type-level list dropWhile.
+-- | Drop the longest prefix of elements satisfying a predicate,
+-- evaluate to the remaining suffix.
 --
 -- === __Example__
 --
@@ -426,10 +428,12 @@ type instance Eval (DropWhile p (x ': xs)) =
       (Pure (x ': xs)))
 
 
--- | 'Span', applied to a predicate @p@ and a type-level list @xs@, returns a
--- type-level tuple where
--- first element is longest prefix (possibly empty) of @xs@ of elements that
--- satisfy @p@ and second element is the remainder of the list:
+-- | 'Span', applied to a predicate @p@ and a list @xs@, returns a tuple:
+-- the first component is the longest prefix (possibly empty) of @xs@ whose elements
+-- satisfy @p@;
+-- the second component is the remainder of the list.
+--
+-- See also 'TakeWhile', 'DropWhile', and 'Break'.
 --
 -- === __Example__
 --
@@ -448,10 +452,9 @@ data Span :: (a -> Exp Bool) -> [a] -> Exp ([a],[a])
 type instance Eval (Span p lst) = '( Eval (TakeWhile p lst), Eval (DropWhile p lst))
 
 
--- | 'Break', applied to a predicate @p@ and a type-level list @xs@, returns a
--- type-level tuple where
--- the first element is the longest prefix (possibly empty) of @xs@ of elements
--- that /do not satisfy/ @p@ and second element is the remainder of the list:
+-- | 'Break', applied to a predicate @p@ and a list @xs@, returns a tuple:
+-- the first component is the longest prefix (possibly empty) of @xs@ whose elements
+-- /do not satisfy/ @p@; the second component is the remainder of the list.
 --
 -- === __Example__
 --
@@ -470,7 +473,7 @@ data Break :: (a -> Exp Bool) -> [a] -> Exp ([a],[a])
 type instance Eval (Break p lst) = Eval (Span (Not <=< p) lst)
 
 
--- | Tails
+-- | List of suffixes of a list.
 --
 -- === __Example__
 --
@@ -482,8 +485,7 @@ type instance Eval (Tails '[]) = '[]
 type instance Eval (Tails (a ': as)) = (a ': as) ': Eval (Tails as)
 
 
--- | 'IsPrefixOf' takes two type-level lists and returns true
--- iff the first list is a prefix of the second.
+-- | Return @True@ when the first list is a prefix of the second.
 --
 -- === __Example__
 --
@@ -513,8 +515,7 @@ type family IsPrefixOf_ (xs :: [a]) (ys :: [a]) :: Bool where
      Eval ((Eval (TyEq x y)) && IsPrefixOf_ xs ys)
 
 
--- | IsSuffixOf take two type-level lists and returns true
--- iff the first list is a suffix of the second.
+-- | Return @True@ when the first list is a suffix of the second.
 --
 -- === __Example__
 --
@@ -538,23 +539,24 @@ type instance Eval (IsSuffixOf xs ys) =
   Eval (IsPrefixOf (Reverse @@ xs) (Reverse @@ ys))
 
 
--- | IsInfixOf take two type-level lists and returns true
--- iff the first list is a infix of the second.
+-- | Return @True@ when the first list is contained within the second.
 --
 -- === __Example__
 --
--- >>> :kind! Eval (IsInfixOf '[2,3,4]  '[0,1,2,3,4,5,6])
--- Eval (IsInfixOf '[2,3,4]  '[0,1,2,3,4,5,6]) :: Bool
+-- >>> :kind! Eval (IsInfixOf '[2,3,4] '[0,1,2,3,4,5,6])
+-- Eval (IsInfixOf '[2,3,4] '[0,1,2,3,4,5,6]) :: Bool
 -- = 'True
 --
--- >>> :kind! Eval (IsInfixOf '[2,4,4]  '[0,1,2,3,4,5,6])
--- Eval (IsInfixOf '[2,4,4]  '[0,1,2,3,4,5,6]) :: Bool
+-- >>> :kind! Eval (IsInfixOf '[2,4,4] '[0,1,2,3,4,5,6])
+-- Eval (IsInfixOf '[2,4,4] '[0,1,2,3,4,5,6]) :: Bool
 -- = 'False
 data IsInfixOf :: [a] -> [a] -> Exp Bool
 type instance Eval (IsInfixOf xs ys) = Eval (Any (IsPrefixOf xs) =<< Tails ys)
 
 
--- | Type-level `Elem` for lists.
+-- | Return @True@ if an element is in a list.
+--
+-- See also 'FindIndex'.
 --
 -- === __Example__
 --
@@ -568,12 +570,14 @@ type instance Eval (IsInfixOf xs ys) = Eval (Any (IsPrefixOf xs) =<< Tails ys)
 data Elem :: a -> [a] -> Exp Bool
 type instance Eval (Elem a as) = Eval (IsJust =<< FindIndex (TyEq a) as)
 
--- | Find an element associated with a key.
+-- | Find an element associated with a key in an association list.
 data Lookup :: k -> [(k, b)] -> Exp (Maybe b)
 type instance Eval (Lookup (a :: k) (as :: [(k, b)])) =
   Eval (Map Snd (Eval (Find (TyEq a <=< Fst) as)) :: Exp (Maybe b))
 
 
+-- | Find @Just@ the first element satisfying a predicate, or evaluate to
+-- @Nothing@ if no element satisfies the predicate.
 data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
 type instance Eval (Find _p '[]) = 'Nothing
 type instance Eval (Find p (a ': as)) =
@@ -582,6 +586,7 @@ type instance Eval (Find p (a ': as)) =
     (Find p as))
 
 
+-- | Keep all elements that satisfy a predicate, remove all that don't.
 data Filter :: (a -> Exp Bool) -> [a] -> Exp [a]
 type instance Eval (Filter _p '[]) = '[]
 type instance Eval (Filter p (a ': as)) =
@@ -590,17 +595,18 @@ type instance Eval (Filter p (a ': as)) =
     (Filter p as))
 
 
--- | Partition
+-- | Split a list into one where all elements satisfy a predicate,
+-- and a second where no elements satisfy it.
 --
 -- === __Example__
 --
 -- >>> :kind! Eval (Partition ((>=) 35) '[ 20, 30, 40, 50])
 -- Eval (Partition ((>=) 35) '[ 20, 30, 40, 50]) :: ([Nat], [Nat])
 -- = '( '[20, 30], '[40, 50])
-data Partition :: (a -> Exp Bool) -> [a] -> Exp ([a],[a])
+data Partition :: (a -> Exp Bool) -> [a] -> Exp ([a], [a])
 type instance Eval (Partition p lst) = Eval (Foldr (PartHelp p) '( '[], '[]) lst)
 
--- helper
+-- | Helper for 'Partition'.
 data PartHelp :: (a -> Exp Bool) -> a -> ([a],[a]) -> Exp ([a],[a])
 type instance Eval (PartHelp p a '(xs,ys)) =
   If (Eval (p a))
