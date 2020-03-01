@@ -21,6 +21,9 @@ module Fcf.Class.Monoid
 
 import Fcf.Core (Exp, Eval)
 
+-- $setup
+-- >>> import GHC.TypeLits (Nat)
+
 -- | Type-level semigroup composition @('Data.Semigroup.<>')@.
 --
 -- This is the fcf-encoding of @('<>')@.
@@ -62,6 +65,20 @@ data MEmpty_ :: Exp a
 type instance Eval MEmpty_ = MEmpty
 
 -- | Type-level monoid identity 'Data.Monoid.mempty'.
+--
+-- === __Examples__
+--
+-- >>> :kind! 'LT <> MEmpty
+-- 'LT <> MEmpty :: Ordering
+-- = 'LT
+--
+-- >>> :kind! MEmpty <> '( 'EQ, '[1, 2])
+-- MEmpty <> '( 'EQ, '[1, 2]) :: (Ordering, [Nat])
+-- = '( 'EQ, '[1, 2])
+--
+-- >>> :kind! '( 'GT, 'Just '()) <> MEmpty
+-- '( 'GT, 'Just '()) <> MEmpty :: (Ordering, Maybe ())
+-- = '( 'GT, 'Just '())
 type family MEmpty :: a
 
 -- (,)
