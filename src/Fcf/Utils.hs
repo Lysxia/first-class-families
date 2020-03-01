@@ -48,10 +48,19 @@ type instance Eval (Constraints '[]) = (() :: Constraint)
 type instance Eval (Constraints (a ': as)) = (a, Eval (Constraints as))
 
 -- | Type equality.
+--
+-- === __Details__
+--
+-- The base library also defines a similar @('Type.Equality.==')@;
+-- it differs from 'TyEq' in the following ways:
+--
+-- * 'TyEq' is heterogeneous: its arguments may have different kinds;
+-- * 'TyEq' is reflexive: @TyEq a a@ always reduces to 'True' even if @a@ is
+--   a variable.
 data TyEq :: a -> b -> Exp Bool
 type instance Eval (TyEq a b) = TyEqImpl a b
 
-type family TyEqImpl (a :: k) (b :: k) :: Bool where
+type family TyEqImpl (a :: k) (b :: l) :: Bool where
   TyEqImpl a a = 'True
   TyEqImpl a b = 'False
 
