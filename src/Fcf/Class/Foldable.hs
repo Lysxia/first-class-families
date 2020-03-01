@@ -149,6 +149,8 @@ type instance Eval (And lst) = Eval (Foldr (&&) 'True lst)
 
 -- | Whether all elements of the list satisfy a predicate.
 --
+-- Note: this identifier conflicts with 'Data.Monoid.All' (from "Data.Monoid").
+--
 -- === __Example__
 --
 -- >>> :kind! Eval (All (Flip (<) 6) '[0,1,2,3,4,5])
