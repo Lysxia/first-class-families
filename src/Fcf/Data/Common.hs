@@ -11,8 +11,6 @@ module Fcf.Data.Common
     Uncurry
   , Fst
   , Snd
-  , First
-  , Second
   , type (***)
 
     -- ** Either
@@ -29,10 +27,6 @@ module Fcf.Data.Common
 
 import Fcf.Core
 
--- $setup
--- >>> import Fcf.Data.Nat
--- >>> import Fcf.Data.Symbol
-
 -- ** Pairs
 
 data Uncurry :: (a -> b -> Exp c) -> (a, b) -> Exp c
@@ -45,42 +39,9 @@ data Snd :: (a, b) -> Exp b
 type instance Eval (Snd '(_a, b)) = b
 
 
--- | Type-level First. Tuples @(,)@ and @Either@ have First-instances.
---
--- === __Example__
---
--- >>> :kind! Eval (First ((+) 1) '(3,"a"))
--- Eval (First ((+) 1) '(3,"a")) :: (Nat, Symbol)
--- = '(4, "a")
-data First :: (a -> Exp b) -> f a c -> Exp (f b c)
-
--- (,)
-type instance Eval (First f '(a,b)) = '(f @@ a, b)
-
--- Either
-type instance Eval (First f ('Left a)) = 'Left (f @@ a)
-type instance Eval (First f ('Right b)) = 'Right b
-
--- | Type-level Second. Tuples @(,)@ and @Either@ have Second-instances.
---
--- === __Example__
---
--- >>> :kind! Eval (Second ((+) 1) '("a",3))
--- Eval (Second ((+) 1) '("a",3)) :: (Symbol, Nat)
--- = '("a", 4)
-data Second :: (c -> Exp d) -> f a c -> Exp (f a d)
-
--- (,)
-type instance Eval (Second f '(a,b)) = '(a, f @@ b)
-
--- Either
-type instance Eval (Second f ('Left a)) = 'Left a
-type instance Eval (Second f ('Right b)) = 'Right (f @@ b)
-
-
 infixr 3 ***
 
--- | Equivalent to 'Bimap' for pairs.
+-- | Specialization of 'Fcf.Class.Bifunctor.Bimap' for pairs.
 data (***) :: (b -> Exp c) -> (b' -> Exp c') -> (b, b') -> Exp (c, c')
 type instance Eval ((***) f f' '(b, b')) = '(Eval (f b), Eval (f' b'))
 
