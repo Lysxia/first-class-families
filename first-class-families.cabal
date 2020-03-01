@@ -33,6 +33,7 @@ library
     Fcf.Data.Nat
     Fcf.Data.Symbol
     Fcf.Classes
+    Fcf.Class.Functor
     Fcf.Utils
   build-depends:
     -- This upper bound is conservative.
