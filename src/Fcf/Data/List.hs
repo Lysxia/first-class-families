@@ -7,6 +7,8 @@
     UndecidableInstances #-}
 
 -- | Lists.
+--
+-- See also "Fcf.Class.Foldable" for additional functions.
 module Fcf.Data.List
   ( -- * Basic functions
     type (++)
@@ -26,17 +28,11 @@ module Fcf.Data.List
   , Intercalate
 
   -- * Reducing lists
+  -- | See also "Fcf.Class.Foldable".
   , Foldr
   , UnList
-
-  -- ** Special folds
   , Concat
   , ConcatMap
-  , And
-  , Or
-  -- , Any -- this will clash with Fcf.Utils Any at Fcf-module
-  , All
-  , Sum
 
   -- * Unfolding and building
   , Unfoldr
