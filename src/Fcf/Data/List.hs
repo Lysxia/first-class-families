@@ -7,10 +7,11 @@
     UndecidableInstances #-}
 
 -- | Lists.
+--
+-- See also "Fcf.Class.Foldable" for additional functions.
 module Fcf.Data.List
   ( -- * Basic functions
     type (++)
-  , type (==)
   , Head
   , Last
   , Tail
@@ -27,17 +28,11 @@ module Fcf.Data.List
   , Intercalate
 
   -- * Reducing lists
+  -- | See also "Fcf.Class.Foldable".
   , Foldr
   , UnList
-
-  -- ** Special folds
   , Concat
   , ConcatMap
-  , And
-  , Or
-  -- , Any -- this will clash with Fcf.Utils Any at Fcf-module
-  , All
-  , Sum
 
   -- * Unfolding and building
   , Unfoldr
@@ -78,10 +73,11 @@ import qualified GHC.TypeLits as TL
 
 import Fcf.Core
 import Fcf.Combinators
-import Fcf.Classes
+import Fcf.Class.Functor (Map)
+import Fcf.Class.Monoid (type (<>))
+import Fcf.Class.Foldable
 import Fcf.Data.Bool
 import Fcf.Data.Common
-import Fcf.Data.Function (Bicomap)
 import Fcf.Data.Nat
 import Fcf.Utils (If, TyEq)
 
@@ -100,22 +96,7 @@ import Fcf.Utils (If, TyEq)
 -- = '[1, 2, 3, 4]
 --
 data (++) :: [a] -> [a] -> Exp [a]
-type instance Eval ((++) '[] ys) = ys
-type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
-
--- | Equality tests for list equality.
---
--- === __Example__
---
--- >>> :kind! Eval ('[1,2,3] == '[1,2,3])
--- Eval ('[1,2,3] == '[1,2,3]) :: Bool
--- = 'True
---
--- >>> :kind! Eval ('[1,2,3] == '[1,3,2])
--- Eval ('[1,2,3] == '[1,3,2]) :: Bool
--- = 'False
-data (==) :: [a] -> [a] -> Exp Bool
-type instance Eval ((==) as bs) = Eval (And =<< ZipWith TyEq as bs)
+type instance Eval ((++) xs ys) = xs <> ys
 
 
 data Head :: [a] -> Exp (Maybe a)
@@ -218,110 +199,9 @@ data Intercalate :: [a] -> [[a]] -> Exp [a]
 type instance Eval (Intercalate xs xss) = Eval (Concat =<< Intersperse xs xss)
 
 
--- | Right fold.
---
--- === __Example__
---
--- >>> :kind! Eval (Foldr (+) 0 '[1, 2, 3, 4])
--- Eval (Foldr (+) 0 '[1, 2, 3, 4]) :: Nat
--- = 10
-data Foldr :: (a -> b -> Exp b) -> b -> [a] -> Exp b
-type instance Eval (Foldr f y '[]) = y
-type instance Eval (Foldr f y (x ': xs)) = Eval (f x (Eval (Foldr f y xs)))
-
 -- | This is 'Foldr' with its argument flipped.
 data UnList :: b -> (a -> b -> Exp b) -> [a] -> Exp b
 type instance Eval (UnList y f xs) = Eval (Foldr f y xs)
-
-
--- | Concatenate a list of lists.
---
--- === __Example__
---
--- >>> :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]]))
--- Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]])) :: [Nat]
--- = '[1, 2, 3, 4, 5, 6]
--- >>> :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]]))
--- Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]])) :: [*]
--- = '[Int, Maybe Int, Maybe String, Either Double Int]
---
-data Concat :: [[a]] -> Exp [a]
-type instance Eval (Concat lsts) = Eval (Foldr (++) '[] lsts)
-
--- | Map a function and concatenate the results.
-data ConcatMap :: (a -> Exp [b]) -> [a] -> Exp [b]
-type instance Eval (ConcatMap f lst) = Eval (Concat (Eval (Map f lst)))
-
-
--- | Give @True@ if all of the booleans in the list are @True@.
---
--- === __Example__
---
--- >>> :kind! Eval (And '[ 'True, 'True])
--- Eval (And '[ 'True, 'True]) :: Bool
--- = 'True
---
--- >>> :kind! Eval (And '[ 'True, 'True, 'False])
--- Eval (And '[ 'True, 'True, 'False]) :: Bool
--- = 'False
-data And :: [Bool] -> Exp Bool
-type instance Eval (And lst) = Eval (Foldr (&&) 'True lst)
-
-
--- | Whether all elements of the list satisfy a predicate.
---
--- === __Example__
---
--- >>> :kind! Eval (All (Flip (<) 6) '[0,1,2,3,4,5])
--- Eval (All (Flip (<) 6) '[0,1,2,3,4,5]) :: Bool
--- = 'True
---
--- >>> :kind! Eval (All (Flip (<) 5) '[0,1,2,3,4,5])
--- Eval (All (Flip (<) 5) '[0,1,2,3,4,5]) :: Bool
--- = 'False
-data All :: (a -> Exp Bool) -> [a] -> Exp Bool
-type instance Eval (All p lst) = Eval (Foldr (Bicomap p Pure (&&)) 'True lst)
-
-
--- | Give @True@ if any of the booleans in the list are @True@.
---
--- === __Example__
---
--- >>> :kind! Eval (Or '[ 'True, 'True])
--- Eval (Or '[ 'True, 'True]) :: Bool
--- = 'True
---
--- >>> :kind! Eval (Or '[ 'False, 'False])
--- Eval (Or '[ 'False, 'False]) :: Bool
--- = 'False
-data Or :: [Bool] -> Exp Bool
-type instance Eval (Or lst) = Eval (Foldr (||) 'False lst)
-
-
--- | Whether any element of the list satisfies a predicate.
---
--- === __Example__
---
--- >>> :kind! Eval (Any (Flip (<) 5) '[0,1,2,3,4,5])
--- Eval (Any (Flip (<) 5) '[0,1,2,3,4,5]) :: Bool
--- = 'True
---
--- >>> :kind! Eval (Any (Flip (<) 0) '[0,1,2,3,4,5])
--- Eval (Any (Flip (<) 0) '[0,1,2,3,4,5]) :: Bool
--- = 'False
-data Any :: (a -> Exp Bool) -> [a] -> Exp Bool
-type instance Eval (Any p lst) = Eval (Foldr (Bicomap p Pure (||)) 'False lst)
-
-
--- | Sum a @Nat@-list.
---
--- === __Example__
---
--- >>> :kind! Eval (Sum '[1,2,3])
--- Eval (Sum '[1,2,3]) :: Nat
--- = 6
-data Sum :: [Nat] -> Exp Nat
-type instance Eval (Sum ns) = Eval (Foldr (+) 0 ns)
 
 
 -- Helper for the Unfoldr.

@@ -48,10 +48,19 @@ type instance Eval (Constraints '[]) = (() :: Constraint)
 type instance Eval (Constraints (a ': as)) = (a, Eval (Constraints as))
 
 -- | Type equality.
+--
+-- === __Details__
+--
+-- The base library also defines a similar @('Type.Equality.==')@;
+-- it differs from 'TyEq' in the following ways:
+--
+-- * 'TyEq' is heterogeneous: its arguments may have different kinds;
+-- * 'TyEq' is reflexive: @TyEq a a@ always reduces to 'True' even if @a@ is
+--   a variable.
 data TyEq :: a -> b -> Exp Bool
 type instance Eval (TyEq a b) = TyEqImpl a b
 
-type family TyEqImpl (a :: k) (b :: k) :: Bool where
+type family TyEqImpl (a :: k) (b :: l) :: Bool where
   TyEqImpl a a = 'True
   TyEqImpl a b = 'False
 
@@ -116,6 +125,11 @@ type (-->) = ('Match_ :: j -> k -> Match j k)
 type Is = ('Is_ :: (j -> Exp Bool) -> k -> Match j k)
 
 -- | Match any type in 'Case'. Should be used as a final branch.
+--
+-- Note: this identifier conflicts with 'Fcf.Class.Foldable.Any' (from "Fcf.Class.Foldable")
+-- 'Data.Monoid.Any' (from "Data.Monoid"), and 'GHC.Exts.Any' (from "GHC.Exts").
+--
+-- We recommend importing this one qualified.
 type Any = ('Any_ :: k -> Match j k)
 
 -- | Pass type being matched in 'Case' to subcomputation. Should be used as a
