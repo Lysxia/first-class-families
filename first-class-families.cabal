@@ -35,6 +35,8 @@ library
     Fcf.Classes
     Fcf.Class.Bifunctor
     Fcf.Class.Functor
+    Fcf.Class.Monoid
+    Fcf.Class.Ord
     Fcf.Utils
   build-depends:
     -- This upper bound is conservative.

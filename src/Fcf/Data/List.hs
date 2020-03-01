@@ -78,7 +78,8 @@ import qualified GHC.TypeLits as TL
 
 import Fcf.Core
 import Fcf.Combinators
-import Fcf.Classes
+import Fcf.Class.Functor (Map)
+import Fcf.Class.Monoid (type (<>))
 import Fcf.Data.Bool
 import Fcf.Data.Common
 import Fcf.Data.Function (Bicomap)
@@ -100,8 +101,7 @@ import Fcf.Utils (If, TyEq)
 -- = '[1, 2, 3, 4]
 --
 data (++) :: [a] -> [a] -> Exp [a]
-type instance Eval ((++) '[] ys) = ys
-type instance Eval ((++) (x ': xs) ys) = x ': Eval ((++) xs ys)
+type instance Eval ((++) xs ys) = Eval (xs <> ys)
 
 -- | Equality tests for list equality.
 --
