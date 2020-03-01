@@ -27,6 +27,9 @@ module Fcf.Data.Nat
   , type (-)
   , type (Fcf.Data.Nat.*)
   , type (^)
+
+    -- * Comparisons
+    -- | Note that these conflict with "Fcf.Class.Ord".
   , type (<=)
   , type (>=)
   , type (<)
