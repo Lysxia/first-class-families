@@ -104,12 +104,6 @@ module Fcf
   , type (&&)
   , Not
 
-    -- *** Multi-way if
-
-  , Guarded
-  , Guard((:=))
-  , Otherwise
-
     -- ** Case splitting
 
   , Case
