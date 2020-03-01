@@ -28,6 +28,7 @@ library
     Fcf.Combinators
     Fcf.Data.Bool
     Fcf.Data.Common
+    Fcf.Data.Function
     Fcf.Data.List
     Fcf.Data.Nat
     Fcf.Data.Symbol

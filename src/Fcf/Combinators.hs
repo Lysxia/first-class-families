@@ -7,6 +7,8 @@
     UndecidableInstances #-}
 
 -- | General fcf combinators.
+--
+-- See also "Fcf.Data.Function" for more.
 module Fcf.Combinators
   ( Pure
   , Pure1
