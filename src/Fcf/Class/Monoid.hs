@@ -20,6 +20,8 @@ module Fcf.Class.Monoid
   ) where
 
 import Fcf.Core (Exp, Eval)
+import Data.Monoid (All(..), Any(..))
+import Data.Type.Bool (type (&&), type (||))
 
 -- $setup
 -- >>> import GHC.TypeLits (Nat)
@@ -57,6 +59,12 @@ type instance (<>) 'GT _b = 'GT
 
 -- ()
 type instance (<>) _a _b = '()
+
+-- All
+type instance (<>) ('All a) ('All b) = 'All (a && b)
+
+-- Any
+type instance (<>) ('Any a) ('Any b) = 'Any (a || b)
 
 -- | Type-level monoid identity 'Data.Monoid.mempty'.
 --
@@ -98,3 +106,9 @@ type instance MEmpty = 'EQ
 
 -- ()
 type instance MEmpty = '()
+
+-- All
+type instance MEmpty = 'All 'True
+
+-- Any
+type instance MEmpty = 'Any 'False
