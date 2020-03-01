@@ -208,25 +208,6 @@ data UnList :: b -> (a -> b -> Exp b) -> [a] -> Exp b
 type instance Eval (UnList y f xs) = Eval (Foldr f y xs)
 
 
--- | Concatenate a list of lists.
---
--- === __Example__
---
--- >>> :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]]))
--- Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]])) :: [Nat]
--- = '[1, 2, 3, 4, 5, 6]
--- >>> :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]]))
--- Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]])) :: [*]
--- = '[Int, Maybe Int, Maybe String, Either Double Int]
---
-data Concat :: [[a]] -> Exp [a]
-type instance Eval (Concat lsts) = Eval (Foldr (++) '[] lsts)
-
--- | Map a function and concatenate the results.
-data ConcatMap :: (a -> Exp [b]) -> [a] -> Exp [b]
-type instance Eval (ConcatMap f lst) = Eval (Concat (Eval (Map f lst)))
-
-
 -- Helper for the Unfoldr.
 data UnfoldrCase :: (b -> Exp (Maybe (a, b))) -> Maybe (a, b) -> Exp [a]
 type instance Eval (UnfoldrCase f ('Just ab)) =

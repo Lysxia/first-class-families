@@ -32,11 +32,19 @@ module Fcf.Class.Foldable
   , FoldrDefault_
 
     -- * Derived operations
+
+    -- ** Predicates
   , And
   , Or
   , All
   , Any
+
+    -- ** Numbers
   , Sum
+
+    -- ** Lists
+  , Concat
+  , ConcatMap
   ) where
 
 import Fcf.Core (Exp, Eval)
@@ -193,3 +201,28 @@ type instance Eval (Any p lst) = Eval (Foldr (Bicomap p Pure (||)) 'False lst)
 -- = 6
 data Sum :: t Nat -> Exp Nat
 type instance Eval (Sum ns) = Eval (Foldr (+) 0 ns)
+
+
+-- | Concatenate a collection of elements from a monoid.
+--
+-- === __Example__
+--
+-- For example, fold a list of lists.
+--
+-- > Concat :: [[a]] -> Exp [a]
+--
+-- >>> :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]]))
+-- Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]])) :: [Nat]
+-- = '[1, 2, 3, 4, 5, 6]
+-- >>> :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]]))
+-- Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]])) :: [*]
+-- = '[Int, Maybe Int, Maybe String, Either Double Int]
+--
+data Concat :: t m -> Exp m
+type instance Eval (Concat xs) = Eval (FoldMap Pure xs)
+
+-- | Map a function and concatenate the results.
+--
+-- This is 'FoldMap' specialized to the list monoid.
+data ConcatMap :: (a -> Exp [b]) -> t a -> Exp [b]
+type instance Eval (ConcatMap f xs) = Eval (FoldMap f xs)
