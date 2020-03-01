@@ -81,6 +81,7 @@ import Fcf.Combinators
 import Fcf.Classes
 import Fcf.Data.Bool
 import Fcf.Data.Common
+import Fcf.Data.Function (Bicomap)
 import Fcf.Data.Nat
 import Fcf.Utils (If, TyEq)
 
@@ -279,7 +280,7 @@ type instance Eval (And lst) = Eval (Foldr (&&) 'True lst)
 -- Eval (All (Flip (<) 5) '[0,1,2,3,4,5]) :: Bool
 -- = 'False
 data All :: (a -> Exp Bool) -> [a] -> Exp Bool
-type instance Eval (All p lst) = Eval (And =<< Map p lst)
+type instance Eval (All p lst) = Eval (Foldr (Bicomap p Pure (&&)) 'True lst)
 
 
 -- | Give @True@ if any of the booleans in the list are @True@.
@@ -309,7 +310,7 @@ type instance Eval (Or lst) = Eval (Foldr (||) 'False lst)
 -- Eval (Any (Flip (<) 0) '[0,1,2,3,4,5]) :: Bool
 -- = 'False
 data Any :: (a -> Exp Bool) -> [a] -> Exp Bool
-type instance Eval (Any p lst) = Eval (Or =<< Map p lst)
+type instance Eval (Any p lst) = Eval (Foldr (Bicomap p Pure (||)) 'False lst)
 
 
 -- | Sum a @Nat@-list.
