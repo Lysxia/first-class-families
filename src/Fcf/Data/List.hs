@@ -101,7 +101,7 @@ import Fcf.Utils (If, TyEq)
 -- = '[1, 2, 3, 4]
 --
 data (++) :: [a] -> [a] -> Exp [a]
-type instance Eval ((++) xs ys) = Eval (xs <> ys)
+type instance Eval ((++) xs ys) = xs <> ys
 
 -- | Equality tests for list equality.
 --

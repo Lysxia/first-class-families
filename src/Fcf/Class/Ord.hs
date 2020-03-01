@@ -42,16 +42,18 @@ import Fcf.Utils (TyEq)
 -- = 'GT
 data Compare :: a -> a -> Exp Ordering
 
--- Symbol
-type instance Eval (Compare a b) = TL.CmpSymbol a b
+-- (,)
+type instance Eval (Compare '(a1, a2) '(b1, b2)) = Eval (Compare a1 b1) <> Eval (Compare a2 b2)
 
--- Nat
-type instance Eval (Compare a b) = TL.CmpNat a b
+-- (,,)
+type instance Eval (Compare '(a1, a2, a3) '(b1, b2, b3))
+  = Eval (Compare a1 b1) <> Eval (Compare a2 b2) <> Eval (Compare a3 b3)
 
--- Bool
-type instance Eval (Compare (a :: Bool) a) = 'EQ
-type instance Eval (Compare 'False 'True) = 'GT
-type instance Eval (Compare 'True 'False) = 'GT
+-- Either
+type instance Eval (Compare ('Left a) ('Left b)) = Eval (Compare a b)
+type instance Eval (Compare ('Right a) ('Right b)) = Eval (Compare a b)
+type instance Eval (Compare ('Left _a) ('Right _b)) = 'LT
+type instance Eval (Compare ('Right _a) ('Left _b)) = 'GT
 
 -- Maybe
 type instance Eval (Compare 'Nothing 'Nothing) = 'EQ
@@ -61,9 +63,32 @@ type instance Eval (Compare ('Just _a) 'Nothing) = 'GT
 
 -- List
 type instance Eval (Compare '[] '[]) = 'EQ
-type instance Eval (Compare (x ': xs) (y ': ys)) = Eval (Eval (Compare x y) <> Eval (Compare xs ys))
+type instance Eval (Compare (x ': xs) (y ': ys)) = Eval (Compare x y) <> Eval (Compare xs ys)
 type instance Eval (Compare '[] (_y ': _ys)) = 'LT
 type instance Eval (Compare (_x ': _xs) '[]) = 'GT
+
+-- Bool
+type instance Eval (Compare (a :: Bool) a) = 'EQ
+type instance Eval (Compare 'False 'True) = 'GT
+type instance Eval (Compare 'True 'False) = 'GT
+
+-- Ordering
+type instance Eval (Compare (a :: Ordering) a) = 'EQ
+type instance Eval (Compare 'LT 'EQ) = 'LT
+type instance Eval (Compare 'LT 'GT) = 'LT
+type instance Eval (Compare 'EQ 'GT) = 'LT
+type instance Eval (Compare 'EQ 'LT) = 'GT
+type instance Eval (Compare 'GT 'LT) = 'GT
+type instance Eval (Compare 'GT 'EQ) = 'GT
+
+-- Symbol
+type instance Eval (Compare a b) = TL.CmpSymbol a b
+
+-- Nat
+type instance Eval (Compare a b) = TL.CmpNat a b
+
+-- ()
+type instance Eval (Compare (a :: ()) b) = 'EQ
 
 -- * Derived operations
 
