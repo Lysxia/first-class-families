@@ -1,4 +1,5 @@
 {-# LANGUAGE
+    CPP,
     DataKinds,
     KindSignatures,
     TypeOperators #-}
@@ -64,6 +65,9 @@ _ = Refl :: Eval ('LT .<> 'GT) :~: 'LT
 _ = Refl :: Eval ('EQ .<> 'GT) :~: 'GT
 _ = Refl :: Eval ('Monoid.All 'True .<> 'Monoid.All 'False) :~: 'Monoid.All 'False
 _ = Refl :: Eval ('Monoid.Any 'True .<> 'Monoid.Any 'False) :~: 'Monoid.Any 'True
+#if __GLASGOW_HASKELL__ >= 802
+_ = Refl :: Eval ("a" .<> MEmpty) :~: "a"
+#endif
 
 -- ** Foldable
 
