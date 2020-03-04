@@ -17,6 +17,8 @@ Type-level strings.
 
 Note that the operators from this module conflict with "GHC.TypeLits".
 
+'Symbol' also has instances of @('Fcf.Class.Monoid.<>')@ and 'Fcf.Class.Monoid.MEmpty'.
+
 -}
 module Fcf.Data.Symbol
     ( -- * Type of symbols
