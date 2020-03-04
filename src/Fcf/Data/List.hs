@@ -459,6 +459,16 @@ type instance Eval (Lookup (a :: k) (as :: [(k, b)])) =
 
 -- | Find @Just@ the first element satisfying a predicate, or evaluate to
 -- @Nothing@ if no element satisfies the predicate.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (Find (TyEq 0) '[1,2,3])
+-- Eval (Find (TyEq 0) '[1,2,3]) :: Maybe Nat
+-- = 'Nothing
+--
+-- >>> :kind! Eval (Find (TyEq 0) '[1,2,3,0])
+-- Eval (Find (TyEq 0) '[1,2,3,0]) :: Maybe Nat
+-- = 'Just 0
 data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
 type instance Eval (Find _p '[]) = 'Nothing
 type instance Eval (Find p (a ': as)) =
@@ -468,6 +478,12 @@ type instance Eval (Find p (a ': as)) =
 
 
 -- | Keep all elements that satisfy a predicate, remove all that don't.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (Filter ((>) 3) '[1,2,3,0])
+-- Eval (Filter ((>) 3) '[1,2,3,0]) :: [Nat]
+-- = '[1, 2, 0]
 data Filter :: (a -> Exp Bool) -> [a] -> Exp [a]
 type instance Eval (Filter _p '[]) = '[]
 type instance Eval (Filter p (a ': as)) =
@@ -496,6 +512,16 @@ type instance Eval (PartHelp p a '(xs,ys)) =
 
 
 -- | Find the index of an element satisfying the predicate.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (FindIndex ((<=) 3) '[1,2,3,1,2,3])
+-- Eval (FindIndex ((<=) 3) '[1,2,3,1,2,3]) :: Maybe Nat
+-- = 'Just 2
+--
+-- >>> :kind! Eval (FindIndex ((>) 0) '[1,2,3,1,2,3])
+-- Eval (FindIndex ((>) 0) '[1,2,3,1,2,3]) :: Maybe Nat
+-- = 'Nothing
 data FindIndex :: (a -> Exp Bool) -> [a] -> Exp (Maybe Nat)
 type instance Eval (FindIndex _p '[]) = 'Nothing
 type instance Eval (FindIndex p (a ': as)) =
@@ -507,6 +533,12 @@ type instance Eval (FindIndex p (a ': as)) =
 -- | Modify an element at a given index.
 --
 -- The list is unchanged if the index is out of bounds.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (SetIndex 2 7 '[1,2,3])
+-- Eval (SetIndex 2 7 '[1,2,3]) :: [Nat]
+-- = '[1, 2, 7]
 data SetIndex :: Nat -> a -> [a] -> Exp [a]
 type instance Eval (SetIndex n a' as) = SetIndexImpl n a' as
 
@@ -515,7 +547,13 @@ type family SetIndexImpl (n :: Nat) (a' :: k) (as :: [k]) where
   SetIndexImpl 0 a' (_a ': as) = a' ': as
   SetIndexImpl n a' (a ': as) = a ': SetIndexImpl (n TL.- 1) a' as
 
-
+-- | Combine elements of two lists pairwise.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (ZipWith (+) '[1,2,3] '[1,1,1])
+-- Eval (ZipWith (+) '[1,2,3] '[1,1,1]) :: [Nat]
+-- = '[2, 3, 4]
 data ZipWith :: (a -> b -> Exp c) -> [a] -> [b] -> Exp [c]
 type instance Eval (ZipWith _f '[] _bs) = '[]
 type instance Eval (ZipWith _f _as '[]) = '[]
