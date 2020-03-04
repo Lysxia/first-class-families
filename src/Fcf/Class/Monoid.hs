@@ -1,4 +1,5 @@
 {-# LANGUAGE
+    CPP,
     DataKinds,
     PolyKinds,
     TypeFamilies,
@@ -22,6 +23,10 @@ module Fcf.Class.Monoid
 import Fcf.Core (Exp, Eval)
 import Data.Monoid (All(..), Any(..))
 import Data.Type.Bool (type (&&), type (||))
+
+#if __GLASGOW_HASKELL__ >= 802
+import GHC.TypeLits (AppendSymbol)
+#endif
 
 -- $setup
 -- >>> import GHC.TypeLits (Nat)
@@ -65,6 +70,12 @@ type instance (<>) ('All a) ('All b) = 'All (a && b)
 
 -- Any
 type instance (<>) ('Any a) ('Any b) = 'Any (a || b)
+
+#if __GLASGOW_HASKELL__ >= 802
+-- Symbol
+-- | With /base >= 4.10.0.0/.
+type instance (<>) x y = AppendSymbol x y
+#endif
 
 -- | Type-level monoid identity 'Data.Monoid.mempty'.
 --
@@ -112,3 +123,6 @@ type instance MEmpty = 'All 'True
 
 -- Any
 type instance MEmpty = 'Any 'False
+
+-- Symbol
+type instance MEmpty = ""
