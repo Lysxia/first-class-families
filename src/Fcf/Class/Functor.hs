@@ -8,11 +8,15 @@
 
 module Fcf.Class.Functor
   ( Map
+  , FMap
   ) where
 
 import Fcf.Core (Exp, Eval)
 
 -- | Type-level 'fmap' for type-level functors.
+--
+-- Note: this name clashes with 'Data.Map.Lazy.Map' from /containers/.
+-- 'FMap' is provided as a synonym to avoid this.
 --
 -- === __Example__
 --
@@ -24,6 +28,9 @@ import Fcf.Core (Exp, Eval)
 -- Eval (Map (AddMul 2) '[0, 1, 2, 3, 4]) :: [Nat]
 -- = '[4, 9, 16, 25, 36]
 data Map :: (a -> Exp b) -> f a -> Exp (f b)
+
+-- | Synonym of 'Map' to avoid name clashes.
+type FMap = Map
 
 -- []
 type instance Eval (Map f '[]) = '[]
