@@ -91,20 +91,20 @@ data Match j k
 -- to subcomputation ('Else'). Examples:
 --
 -- @
--- type BoolToNat = Case
---   [ 'True  --> 0
---   , 'False --> 1
+-- type BoolToNat = 'Case'
+--   [ 'True  '-->' 0
+--   , 'False '-->' 1
 --   ]
 --
--- type NatToBool = Case
---   [ 0 --> 'False
---   , Any   'True
+-- type NatToBool = 'Case'
+--   [ 0 '-->' 'False
+--   , 'Any'   'True
 --   ]
 --
--- type ZeroOneOrSucc = Case
---   [ 0  --> 0
---   , 1  --> 1
---   , Else   ((+) 1)
+-- type ZeroOneOrSucc = 'Case'
+--   [ 0  '-->' 0
+--   , 1  '-->' 1
+--   , 'Else'   (('+') 1)
 --   ]
 -- @
 data Case :: [Match j k] -> j -> Exp k
