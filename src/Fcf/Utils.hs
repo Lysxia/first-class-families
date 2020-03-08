@@ -33,6 +33,7 @@ import Data.Type.Bool (If)
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage(..))
 
 import Fcf.Core
+import Fcf.Combinators (Pure)
 
 -- | Type-level 'error'.
 data Error :: Symbol -> Exp a
@@ -110,8 +111,7 @@ data Case :: [Match j k] -> j -> Exp k
 type instance Eval (Case ms a) = Case_ ms a
 
 type family Case_ (ms :: [Match j k]) (a :: j) :: k where
-  Case_ ('Match_ a b : _ ) a = b
-  Case_ ('Match_ _ _ : ms) a = Case_ ms a
+  Case_ ('Match_ a' b : ms) a = Eval (If (TyEqImpl a' a) (Pure b) (Case ms a))
   Case_ ('Is_ p b    : ms) a = Case_ [ 'True  --> b
                                      , 'False --> Case_ ms a
                                      ] (p @@ a)
