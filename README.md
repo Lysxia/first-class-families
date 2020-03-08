@@ -1,5 +1,21 @@
 # First-class type families [![Hackage](https://img.shields.io/hackage/v/first-class-families.svg)](https://hackage.haskell.org/package/first-class-families) [![Build Status](https://travis-ci.org/Lysxia/first-class-families.svg)](https://travis-ci.org/Lysxia/first-class-families)
 
+First-class type families are type-level functions that can be
+composed using higher-order functions.
+
+The core of the idea is an extensible kind of "type-level expressions"
+and an open type family for evaluating such expressions.
+
+```haskell
+type Exp (k :: Type) :: Type
+type family Eval (e :: Exp k) :: k
+```
+
+This library provides that core foundation,
+and also exports basic first-class type families.
+
+## Example
+
 For example, consider this simple type family:
 
 ```haskell
@@ -38,9 +54,29 @@ Essential language extensions:
     UndecidableInstances #-}
 ```
 
+## Overview
+
+- `Fcf.Core`: definition of `Exp` and `Eval`.
+- `Fcf.Combinators`: general combinators to compose first-class families.
+- `Fcf.Data.*`: first-class families on common data types.
+- `Fcf.Class.*`: overloaded first-class families.
+- `Fcf.Utils`: miscellaneous.
+
+The top-level module `Fcf` is a prelude to get acquainted with the library.
+For regular use, import what you need from the specialized modules
+above, preferably with explicit import lists.
+
+```haskell
+import Fcf                       -- Simple but fragile
+
+import Fcf.Class.Functor (FMap)  -- Explicit and robust
+```
+
 ## See also
 
-[Haskell with only one type family](http://blog.poisson.chat/posts/2018-08-06-one-type-family.html) (blogpost)
+- [Haskell with only one type family](http://blog.poisson.chat/posts/2018-08-06-one-type-family.html)
+- [Overloaded type families](https://blog.poisson.chat/posts/2018-09-29-overloaded-families.html)
+- [The *singletons* library](https://hackage.haskell.org/package/singletons)
 
 ---
 
