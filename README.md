@@ -72,6 +72,26 @@ import Fcf                       -- Simple but fragile
 import Fcf.Class.Functor (FMap)  -- Explicit and robust
 ```
 
+## Features
+
+### Overloaded type families
+
+Value-level functions can be overloaded using type classes.
+Type families---type-level functions---are open by design,
+so overloading is as easy as just declaring them with more general types.
+
+```haskell
+data Map :: (a -> Exp b) -> f a -> Exp (f b)
+
+-- Instances for f = []
+type instance Eval (Map f '[]) = '[]
+type instance Eval (Map f (x ': xs)) = Eval (f x) ': Eval (Map f xs)
+
+-- Instances for f = Maybe
+type instance Eval (Map f 'Nothing) = 'Nothing
+type instance Eval (Map f ('Just x)) = 'Just (Eval (f x))
+```
+
 ## See also
 
 - [Haskell with only one type family](http://blog.poisson.chat/posts/2018-08-06-one-type-family.html)
