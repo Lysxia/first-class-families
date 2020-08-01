@@ -1,12 +1,11 @@
 name:                first-class-families
 version:             0.8.0.0
 synopsis:
-  First class type families
+  First-class type families
 description:
-  First class type families,
-  eval-style defunctionalization
+  A library for type-level programming.
   .
-  See "Fcf".
+  See README.
 homepage:            https://github.com/Lysxia/first-class-families#readme
 license:             MIT
 license-file:        LICENSE
