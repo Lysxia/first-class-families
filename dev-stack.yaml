@@ -1,5 +1,0 @@
-# To use this file, you can copy it:
-#   cp dev-stack.yaml stack.yaml
-resolver: lts-13.2
-packages:
-- .
