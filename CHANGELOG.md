@@ -1,3 +1,8 @@
+# 0.8.0.1
+
+- Bump upper bounds for GHC 9.0
+- Update doctests for cabal-docspec
+
 # 0.8.0.0
 
 - Add modules
