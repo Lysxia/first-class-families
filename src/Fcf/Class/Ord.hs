@@ -29,6 +29,9 @@ import Fcf.Class.Monoid (type (<>))  -- Semigroup Ordering
 import Fcf.Data.Bool (Not)
 import Fcf.Utils (TyEq)
 
+-- $setup
+-- >>> import Fcf.Core (Eval)
+
 -- | Type-level 'compare' for totally ordered data types.
 --
 -- === __Example__

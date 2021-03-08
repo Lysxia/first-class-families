@@ -18,6 +18,8 @@ import Fcf.Core
 infixl 1 &
 
 -- $setup
+-- >>> :set -XTypeFamilies -XDataKinds -XTypeOperators
+-- >>> import Fcf.Core
 -- >>> import Fcf.Combinators (Pure)
 -- >>> import Fcf.Data.Common (Fst)
 -- >>> import Fcf.Data.Bool (type (&&), type (||))

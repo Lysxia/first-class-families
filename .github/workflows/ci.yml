@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest]
         cabal: ["3.2"]
         ghc:
           - "8.0"
@@ -21,29 +21,20 @@ jobs:
           - "8.6"
           - "8.8"
           - "8.10"
-        exclude:
-          - os: macOS-latest
-            ghc: 8.8
-          - os: macOS-latest
-            ghc: 8.6
-          - os: macOS-latest
-            ghc: 8.4
-          - os: macOS-latest
-            ghc: 8.2
-          - os: macOS-latest
-            ghc: 8.0
-          - os: windows-latest
-            ghc: 8.8
-          - os: windows-latest
-            ghc: 8.6
-          - os: windows-latest
-            ghc: 8.4
-          - os: windows-latest
-            ghc: 8.2
-          - os: windows-latest
-            ghc: 8.0
-
+          - "9.0"
     steps:
+    - name: Set environment
+      run: |
+        echo "$HOME/.cabal/bin" >> $GITHUB_PATH
+    - name: Install cabal-docspec
+      run: |
+        mkdir -p $HOME/.cabal/bin
+        curl -sL https://github.com/phadej/cabal-extras/releases/download/cabal-docspec-0.0.0.20210111/cabal-docspec-0.0.0.20210111.xz > cabal-docspec.xz
+        echo '0829bd034fba901cbcfe491d98ed8b28fd54f9cb5c91fa8e1ac62dc4413c9562  cabal-docspec.xz' | sha256sum -c -
+        xz -d < cabal-docspec.xz > $HOME/.cabal/bin/cabal-docspec
+        rm -f cabal-docspec.xz
+        chmod a+x $HOME/.cabal/bin/cabal-docspec
+        cabal-docspec --version
     - uses: actions/checkout@v2
       if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.ref == 'refs/heads/master'
 
@@ -79,6 +70,7 @@ jobs:
     - name: Test
       run: |
         cabal test all
+        cabal-docspec
 
   stack:
     name: stack / ghc ${{ matrix.ghc }}
@@ -86,7 +78,7 @@ jobs:
     strategy:
       matrix:
         stack: ["latest"]
-        ghc: ["8.8"]
+        ghc: ["8.10"]
 
     steps:
     - uses: actions/checkout@v2

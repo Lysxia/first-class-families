@@ -82,9 +82,11 @@ import Fcf.Data.Nat
 import Fcf.Utils (If, TyEq)
 
 -- $setup
--- >>> import Fcf.Core
+-- >>> import Fcf.Core (Eval)
 -- >>> import Fcf.Combinators
+-- >>> import Fcf.Class.Monoid ()
 -- >>> import qualified GHC.TypeLits as TL
+-- >>> import GHC.TypeLits (Nat)
 
 
 -- | List catenation.

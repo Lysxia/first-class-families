@@ -21,6 +21,7 @@ import Fcf.Core (Exp, Eval)
 import Fcf.Combinators (Pure)
 
 -- $setup
+-- >>> import Fcf.Core (Eval)
 -- >>> import Fcf.Combinators (Flip)
 -- >>> import Fcf.Data.Nat (Nat, type (+), type (-))
 -- >>> import Fcf.Data.Symbol (Symbol)
