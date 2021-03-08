@@ -19,6 +19,9 @@ module Fcf.Data.Bool
 
 import Fcf.Core
 
+-- $setup
+-- >>> :set -XTypeFamilies
+
 -- | N.B.: The order of the two branches is the opposite of "if":
 -- @UnBool ifFalse ifTrue bool@.
 --

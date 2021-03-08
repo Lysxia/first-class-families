@@ -13,6 +13,12 @@ module Fcf.Class.Functor
 
 import Fcf.Core (Exp, Eval)
 
+-- $setup
+-- >>> :set -XUndecidableInstances -XTypeInType
+-- >>> import Fcf.Core (Eval, Exp)
+-- >>> import Fcf.Data.Nat
+-- >>> import qualified GHC.TypeLits as TL
+
 -- | Type-level 'fmap' for type-level functors.
 --
 -- Note: this name clashes with 'Data.Map.Lazy.Map' from /containers/.
@@ -20,8 +26,6 @@ import Fcf.Core (Exp, Eval)
 --
 -- === __Example__
 --
--- >>> import Fcf.Data.Nat
--- >>> import qualified GHC.TypeLits as TL
 -- >>> data AddMul :: Nat -> Nat -> Exp Nat
 -- >>> type instance Eval (AddMul x y) = (x TL.+ y) TL.* (x TL.+ y)
 -- >>> :kind! Eval (Map (AddMul 2) '[0, 1, 2, 3, 4])
