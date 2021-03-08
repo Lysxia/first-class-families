@@ -17,7 +17,7 @@ build-type:          Simple
 extra-source-files:  README.md, CHANGELOG.md
 cabal-version:       >=1.10
 tested-with:
-  GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.1, GHC == 8.10.1
+  GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.1, GHC == 8.10.1, GHC == 9.0.1
 
 library
   hs-source-dirs:      src
@@ -41,7 +41,7 @@ library
     Fcf.Utils
   build-depends:
     -- This upper bound is conservative.
-    base >= 4.9 && < 4.15
+    base >= 4.9 && < 4.16
   ghc-options:         -Wall
   default-language:    Haskell2010
 
