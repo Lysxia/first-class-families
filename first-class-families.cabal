@@ -41,7 +41,7 @@ library
     Fcf.Utils
   build-depends:
     -- This upper bound is conservative.
-    base >= 4.9 && < 4.16
+    base >= 4.9 && < 4.17
   ghc-options:         -Wall
   default-language:    Haskell2010
 
