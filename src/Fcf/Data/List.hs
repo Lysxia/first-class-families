@@ -82,6 +82,7 @@ import Fcf.Data.Nat
 import Fcf.Utils (If, TyEq)
 
 -- $setup
+-- >>> :set -XGADTs
 -- >>> import Fcf.Core (Eval)
 -- >>> import Fcf.Combinators
 -- >>> import Fcf.Class.Monoid ()
@@ -93,9 +94,10 @@ import Fcf.Utils (If, TyEq)
 --
 -- === __Example__
 --
--- >>> :kind! Eval ('[1, 2] ++ '[3, 4])
--- Eval ('[1, 2] ++ '[3, 4]) :: [Nat]
--- = '[1, 2, 3, 4]
+-- >>> data Example where Ex :: a -> Example  -- Hide the type of examples to avoid brittleness in different GHC versions
+-- >>> :kind! 'Ex (Eval ('[1, 2] ++ '[3, 4]) :: [Nat])
+-- 'Ex (Eval ('[1, 2] ++ '[3, 4]) :: [Nat]) :: Example
+-- = 'Ex '[1, 2, 3, 4]
 --
 data (++) :: [a] -> [a] -> Exp [a]
 type instance Eval ((++) xs ys) = xs <> ys

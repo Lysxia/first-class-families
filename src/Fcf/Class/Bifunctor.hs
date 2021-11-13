@@ -21,6 +21,7 @@ import Fcf.Core (Exp, Eval)
 import Fcf.Combinators (Pure)
 
 -- $setup
+-- >>> :set -XGADTs
 -- >>> import Fcf.Core (Eval)
 -- >>> import Fcf.Combinators (Flip)
 -- >>> import Fcf.Data.Nat (Nat, type (+), type (-))
@@ -28,9 +29,12 @@ import Fcf.Combinators (Pure)
 
 -- | Type-level 'Data.Bifunctor.bimap'.
 --
--- >>> :kind! Eval (Bimap ((+) 1) (Flip (-) 1) '(2, 4))
--- Eval (Bimap ((+) 1) (Flip (-) 1) '(2, 4)) :: (Nat, Nat)
--- = '(3, 3)
+-- === __Example__
+--
+-- >>> data Example where Ex :: a -> Example  -- Hide the type of examples to avoid brittleness in different GHC versions
+-- >>> :kind! 'Ex (Eval (Bimap ((+) 1) (Flip (-) 1) '(2, 4)) :: (Nat, Nat))
+-- 'Ex (Eval (Bimap ((+) 1) (Flip (-) 1) '(2, 4)) :: (Nat, Nat)) :: Example
+-- = 'Ex '(3, 3)
 data Bimap :: (a -> Exp a') -> (b -> Exp b') -> f a b -> Exp (f a' b')
 
 -- (,)
