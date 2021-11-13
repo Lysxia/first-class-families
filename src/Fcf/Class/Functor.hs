@@ -14,7 +14,7 @@ module Fcf.Class.Functor
 import Fcf.Core (Exp, Eval)
 
 -- $setup
--- >>> :set -XUndecidableInstances -XTypeInType
+-- >>> :set -XUndecidableInstances -XTypeInType -XGADTs
 -- >>> import Fcf.Core (Eval, Exp)
 -- >>> import Fcf.Data.Nat
 -- >>> import qualified GHC.TypeLits as TL
@@ -26,11 +26,12 @@ import Fcf.Core (Exp, Eval)
 --
 -- === __Example__
 --
+-- >>> data Example where Ex :: a -> Example  -- Hide the type of examples to avoid brittleness in different GHC versions
 -- >>> data AddMul :: Nat -> Nat -> Exp Nat
 -- >>> type instance Eval (AddMul x y) = (x TL.+ y) TL.* (x TL.+ y)
--- >>> :kind! Eval (Map (AddMul 2) '[0, 1, 2, 3, 4])
--- Eval (Map (AddMul 2) '[0, 1, 2, 3, 4]) :: [Nat]
--- = '[4, 9, 16, 25, 36]
+-- >>> :kind! 'Ex (Eval (Map (AddMul 2) '[0, 1, 2, 3, 4]) :: [Nat])
+-- 'Ex (Eval (Map (AddMul 2) '[0, 1, 2, 3, 4]) :: [Nat]) :: Example
+-- = 'Ex '[4, 9, 16, 25, 36]
 data Map :: (a -> Exp b) -> f a -> Exp (f b)
 
 -- | Synonym of 'Map' to avoid name clashes.
