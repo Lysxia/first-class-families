@@ -14,7 +14,7 @@ module Fcf.Class.Monoid.Types
   ) where
 
 import Fcf.Core (Exp)
-import Fcf.Combinators (Pure, type (<=<))
+import Fcf.Combinators (Pure, type (.))
 import Fcf.Class.Monoid
 
 -- | Endofunctions.
@@ -34,5 +34,5 @@ type family UnEndo (e :: Endo a) :: a -> Exp a where
 --
 -- Note it is only a monoid up to 'Eval'.
 
-type instance 'Endo f <> 'Endo g = 'Endo (f <=< g)
+type instance 'Endo f <> 'Endo g = 'Endo (f . g)
 type instance MEmpty = 'Endo Pure

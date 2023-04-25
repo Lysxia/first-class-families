@@ -40,18 +40,7 @@ module Fcf
 
     -- ** Functional combinators
 
-  , Pure
-  , Pure1
-  , Pure2
-  , Pure3
-  , type (=<<)
-  , type (<=<)
-  , LiftM
-  , LiftM2
-  , LiftM3
-  , Join
-  , type (<$>)
-  , type (<*>)
+  , type (.)
   , Flip
   , ConstFn
   , type ($)

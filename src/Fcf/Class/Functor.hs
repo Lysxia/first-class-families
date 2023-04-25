@@ -2,14 +2,15 @@
     DataKinds,
     PolyKinds,
     TypeFamilies,
-    TypeInType,
-    TypeOperators,
-    UndecidableInstances #-}
+    TypeOperators #-}
 
 module Fcf.Class.Functor
   ( Map
   , FMap
+  , type (<$>)
   ) where
+
+import Data.Functor.Identity
 
 import Fcf.Core (Exp, Eval)
 
@@ -36,6 +37,8 @@ data Map :: (a -> Exp b) -> f a -> Exp (f b)
 
 -- | Synonym of 'Map' to avoid name clashes.
 type FMap = Map
+type (<$>) = FMap
+infixl 1 <$>
 
 -- []
 type instance Eval (Map f '[]) = '[]
@@ -58,3 +61,6 @@ type instance Eval (Map f '(x, y, z, a)) =
   '(x, y, z, Eval (f a))
 type instance Eval (Map f '(x, y, z, w, a)) =
   '(x, y, z, w, Eval (f a))
+
+-- Identity
+type instance Eval (FMap f ('Identity a)) = 'Identity (Eval (f a))

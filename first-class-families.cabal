@@ -31,10 +31,13 @@ library
     Fcf.Data.List
     Fcf.Data.Nat
     Fcf.Data.Symbol
+    Fcf.Data.Tuple
     Fcf.Classes
     Fcf.Class.Bifunctor
     Fcf.Class.Foldable
     Fcf.Class.Functor
+    Fcf.Class.Applicative
+    Fcf.Class.Monad
     Fcf.Class.Monoid
     Fcf.Class.Monoid.Types
     Fcf.Class.Ord

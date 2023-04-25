@@ -15,7 +15,9 @@ module Fcf.Combinators
   , Pure2
   , Pure3
   , type (=<<)
+  , type (>>=)
   , type (<=<)
+  , type (.)
   , LiftM
   , LiftM2
   , LiftM3
@@ -34,6 +36,7 @@ import Fcf.Core
 infixl 1 >>=
 infixr 1 =<<, <=<
 infixl 4 <$>, <*>
+infixr 9 .
 
 data Pure :: a -> Exp a
 type instance Eval (Pure x) = x
@@ -54,7 +57,9 @@ data (>>=) :: Exp a -> (a -> Exp b) -> Exp b
 type instance Eval (e >>= k) = Eval (k (Eval e))
 
 data (<=<) :: (b -> Exp c) -> (a -> Exp b) -> a -> Exp c
-type instance Eval ((f <=< g) x) = Eval (f (Eval (g x)))
+type instance Eval ((f . g) x) = Eval (f (Eval (g x)))
+
+type (.) = (<=<)
 
 type LiftM = (=<<)
 

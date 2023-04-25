@@ -48,7 +48,7 @@ module Fcf.Class.Foldable
   ) where
 
 import Fcf.Core (Exp, Eval)
-import Fcf.Combinators (Pure, Pure1, type (<=<))
+import Fcf.Combinators (Pure, Pure1, type (.))
 import Fcf.Data.Function (Bicomap)
 import Fcf.Class.Monoid
 import Fcf.Class.Monoid.Types (Endo(..), UnEndo)
@@ -108,7 +108,7 @@ type FoldMapDefault_ f xs = Eval (Foldr (Bicomap f Pure (.<>)) MEmpty xs)
 -- >>> :kind! FoldrDefault_ (.<>) 'EQ '[ 'EQ, 'LT, 'GT ]
 -- FoldrDefault_ (.<>) 'EQ '[ 'EQ, 'LT, 'GT ] :: Ordering
 -- = 'LT
-type FoldrDefault_ f y xs = Eval (UnEndo (Eval (FoldMap (Pure1 'Endo <=< Pure1 f) xs)) y)
+type FoldrDefault_ f y xs = Eval (UnEndo (Eval (FoldMap (Pure1 'Endo . Pure1 f) xs)) y)
 
 -- | Right fold.
 --

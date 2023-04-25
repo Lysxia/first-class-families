@@ -355,7 +355,7 @@ type instance Eval (Span p lst) = '( Eval (TakeWhile p lst), Eval (DropWhile p l
 -- Eval (Break (Flip (>) 9) '[1,2,3]) :: ([Nat], [Nat])
 -- = '( '[1, 2, 3], '[])
 data Break :: (a -> Exp Bool) -> [a] -> Exp ([a],[a])
-type instance Eval (Break p lst) = Eval (Span (Not <=< p) lst)
+type instance Eval (Break p lst) = Eval (Span (Not . p) lst)
 
 
 -- | List of suffixes of a list.
@@ -458,7 +458,7 @@ type instance Eval (Elem a as) = Eval (IsJust =<< FindIndex (TyEq a) as)
 -- | Find an element associated with a key in an association list.
 data Lookup :: k -> [(k, b)] -> Exp (Maybe b)
 type instance Eval (Lookup (a :: k) (as :: [(k, b)])) =
-  Eval (Map Snd (Eval (Find (TyEq a <=< Fst) as)) :: Exp (Maybe b))
+  Eval (Map Snd (Eval (Find (TyEq a . Fst) as)) :: Exp (Maybe b))
 
 
 -- | Find @Just@ the first element satisfying a predicate, or evaluate to
