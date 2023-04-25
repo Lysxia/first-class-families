@@ -31,6 +31,7 @@ library
     Fcf.Data.List
     Fcf.Data.Nat
     Fcf.Data.Symbol
+    Fcf.Data.Traversable
     Fcf.Data.Tuple
     Fcf.Classes
     Fcf.Class.Bifunctor

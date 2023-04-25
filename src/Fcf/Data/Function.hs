@@ -11,6 +11,7 @@ module Fcf.Data.Function
   ( type (&)
   , On
   , Bicomap
+  , Id
   ) where
 
 import Fcf.Core
@@ -53,3 +54,7 @@ type instance Eval (On r f x y) = Eval (r (Eval (f x)) (Eval (f y)))
 -- = 'True
 data Bicomap :: (a -> Exp c) -> (b -> Exp d) -> (c -> d -> Exp e) -> a -> b -> Exp e
 type instance Eval (Bicomap f g r x y) = Eval (r (Eval (f x)) (Eval (g y)))
+
+-- | Id function correspondes to term level 'id'-function.
+data Id :: a -> Exp a
+type instance Eval (Id a) = a
