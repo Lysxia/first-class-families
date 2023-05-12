@@ -37,6 +37,9 @@ library
     Fcf.Class.Functor
     Fcf.Class.Monoid
     Fcf.Class.Monoid.Types
+    Fcf.Class.Eq
+    Fcf.Class.Eq.Internal
+    Fcf.Class.Eq.Exp
     Fcf.Class.Ord
     Fcf.Utils
   build-depends:

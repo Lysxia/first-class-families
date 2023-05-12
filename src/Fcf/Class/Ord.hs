@@ -6,10 +6,8 @@
     TypeOperators,
     UndecidableInstances #-}
 
--- | Equality and ordering.
+-- | Ordering.
 --
--- Note that equality doesn't really require a class,
--- it can be defined uniformly as 'TyEq'.
 module Fcf.Class.Ord
   ( -- * Order
     Compare
@@ -17,9 +15,6 @@ module Fcf.Class.Ord
   , type (>=)
   , type (<)
   , type (>)
-
-    -- * Equality
-  , TyEq
   ) where
 
 import qualified GHC.TypeLits as TL
