@@ -4,6 +4,7 @@
     TypeFamilies,
     TypeInType,
     TypeOperators,
+    StandaloneKindSignatures,
     UndecidableInstances #-}
 
 -- | Ordering.
@@ -15,17 +16,24 @@ module Fcf.Class.Ord
   , type (>=)
   , type (<)
   , type (>)
+
+    -- ** Default implementations
+  , CompareDefault_
   ) where
 
 import qualified GHC.TypeLits as TL
 
 import Fcf.Core
 import Fcf.Class.Monoid (type (<>))  -- Semigroup Ordering
-import Fcf.Data.Bool (Not)
-import Fcf.Utils (TyEq)
+import Fcf.Utils (If)
+import Fcf.Class.Eq (type (==), type (/=))
 
 -- $setup
+-- >>> :set -XDataKinds -XTypeFamilies -XUndecidableInstances -XPolyKinds
+-- >>> import Fcf.Utils (TyEq, If)
 -- >>> import Fcf.Core (Eval)
+-- >>> import Fcf.Class.Eq (type (==))
+-- >>> import Fcf.Data.Bool (type (||))
 
 -- | Type-level 'compare' for totally ordered data types.
 --
@@ -92,11 +100,52 @@ type instance Eval (Compare a b) = TL.CmpNat a b
 -- ()
 type instance Eval (Compare (a :: ()) b) = 'EQ
 
--- * Derived operations
-
--- Asymmetric comparison operators @Exp a -> a -> Bool@.
-type a ~== b = Eval (TyEq (Eval a) b)
-type a ~/= b = Eval (Not (a ~== b))
+-- | Default implementation of 'Compare' provided you have defined a type instance for '=='
+--
+-- === __Usage__
+--
+-- To define an instance of 'Compare' for a custom @MyType@ for which you already have
+-- an instance of '==':
+--
+-- First: Create a type level function that can be partially appled that handles less-than for @MyType@
+--
+-- @
+-- data Lambda :: MyType -> MyType -> 'Exp' 'Bool'
+-- type instance 'Eval' (Lambda x y) = 'True
+-- @
+--
+-- Second: Create a your type instance using 'CompareDefault_'
+--
+-- @
+-- type instance 'Eval' ('Compare' x (y :: MyType)) = 'CompareDefault_' Lambda x y
+-- @
+--
+-- ==== __Example__
+-- 
+-- >>> data Test = A | B
+--
+-- >>> type instance (==) (x :: Test) y = Eval (TyEq x y) -- Equality instance
+--
+-- >>> :{
+-- >>> type family TestLessThanEq (x :: Test) (y :: Test) where -- (Optional) it is for easier pattern matching (lets us write less cases)
+-- >>>   TestLessThanEq _ 'A = 'True
+-- >>>   TestLessThanEq 'B _ = 'True
+-- >>>   TestLessThanEq _ _ = 'False
+-- >>> :}
+-- >>> data CompareDefaultLambda :: Test -> Test -> Exp Bool -- lambda for CompareDefault_
+-- >>> type instance Eval (CompareDefaultLambda x y) = TestLessThanEq x y
+--
+-- >>> type instance Eval (Compare x (y :: Test)) = CompareDefault_ CompareDefaultLambda x y
+-- >>> :kind! Eval (Compare 'A 'B)
+-- Eval (Compare 'A 'B) :: Ordering
+-- = 'GT
+--        
+type CompareDefault_ :: 
+     (a -> a -> Exp Bool) -- ^ function to compare if first arg is less than second arg
+  -> a
+  -> a 
+  -> Ordering
+type CompareDefault_ f x y = If (x == y) 'EQ (If (Eval (f x y)) 'LT 'GT)
 
 -- | "Smaller than or equal to". Type-level version of @('<=')@.
 --
@@ -106,7 +155,7 @@ type a ~/= b = Eval (Not (a ~== b))
 -- Eval ("b" <= "a") :: Bool
 -- = 'False
 data (<=) :: a -> a -> Exp Bool
-type instance Eval ((<=) a b) = Compare a b ~/= 'GT
+type instance Eval ((<=) a b) = Eval (Compare a b) /= 'GT
 
 -- | "Greater than or equal to". Type-level version of @('>=')@.
 --
@@ -116,7 +165,7 @@ type instance Eval ((<=) a b) = Compare a b ~/= 'GT
 -- Eval ("b" >= "a") :: Bool
 -- = 'True
 data (>=) :: a -> a -> Exp Bool
-type instance Eval ((>=) a b) = Compare a b ~/= 'LT
+type instance Eval ((>=) a b) = Eval (Compare a b) /= 'LT
 
 -- | "Smaller than". Type-level version of @('<')@.
 --
@@ -126,7 +175,7 @@ type instance Eval ((>=) a b) = Compare a b ~/= 'LT
 -- Eval ("a" < "b") :: Bool
 -- = 'True
 data (<) :: a -> a -> Exp Bool
-type instance Eval ((<) a b) = Compare a b ~== 'LT
+type instance Eval ((<) a b) = Eval (Compare a b) == 'LT
 
 -- | "Greater than". Type-level version of @('>')@.
 --
@@ -136,4 +185,4 @@ type instance Eval ((<) a b) = Compare a b ~== 'LT
 -- Eval ("b" > "a") :: Bool
 -- = 'True
 data (>) :: a -> a -> Exp Bool
-type instance Eval ((>) a b) = Compare a b ~== 'GT
+type instance Eval ((>) a b) = Eval (Compare a b) == 'GT

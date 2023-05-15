@@ -16,6 +16,7 @@ import Fcf.Class.Bifunctor
 import Fcf.Class.Foldable
 import Fcf.Class.Monoid
 import Fcf.Class.Ord
+import Fcf.Class.Eq
 
 import Fcf.Data.Function
 import Fcf.Data.List
@@ -37,6 +38,14 @@ _ = Refl :: Eval (UnitPrefix 0) :~: ""
 _ = Refl :: Eval (UnitPrefix 3) :~: "kilo"
 
 -- * Class
+
+-- ** Eq
+
+_ = Refl :: ('Left 5 == 'Right 5) :~: 'False
+_ = Refl :: ('Right 5 == 'Right 5) :~: 'True
+_ = Refl :: (Nothing == 'Just 5) :~: 'False
+_ = Refl :: ('Just "h" == 'Just "H") :~: 'False
+_ = Refl :: ('[ '( '(), 'LT) ] == '[ '( '(), 'LT) ]) :~: 'True
 
 -- ** Ord
 

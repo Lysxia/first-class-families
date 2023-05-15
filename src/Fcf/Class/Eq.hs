@@ -15,12 +15,8 @@
 --
 module Fcf.Class.Eq 
   ( type (==)
-  , type (&&)
-  , type (||)
   , type (/=)
-  , Not
   )
   where
 
 import Fcf.Class.Eq.Internal
-import Data.Type.Bool

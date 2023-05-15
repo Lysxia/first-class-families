@@ -14,31 +14,52 @@
 module Fcf.Class.Eq.Internal where
 
 import Data.Type.Bool
-import qualified GHC.TypeLits as TL
-import Fcf.Utils
 import Fcf.Core
+import Data.Eq () -- ^ imported for haddock
+import qualified Data.Type.Equality as Type (type (==))
+import Fcf.Data.Symbol (Symbol)
+import Fcf.Data.Nat (Nat)
+import Data.Kind (Type)
+
+-- $setup
+-- >>> :set -XDataKinds -XTypeOperators
+-- >>> :m Fcf.Class.Eq
 
 infix 4 ==, /=
 
-type (==) :: a -> a -> Bool
-type family (==) x y
+-- | Type-level version of 'Data.Eq.=='
+-- 
+-- === __Example__
+-- 
+-- >>> :kind! "hello" == "hello"
+-- "hello" == "hello" :: Bool
+-- = 'True
+--
+-- >>> :kind! 5 == 6
+-- 5 == 6 : Bool
+-- = 'False
+--
+type family (==) (x :: a) (y :: a) :: Bool
 
+-- | Type-level version of 'Data.Eq./='
+--
+-- === __Example__
+-- 
+-- >>> :kind! "hello" /= "hello"
+-- "hello" /= "hello" :: Bool
+-- = 'False
+--
+-- >>> :kind! 5 /= 6
+-- 5 /= 6 : Bool
+-- = 'True
+--
 type (/=) a b = Not (a == b)
-
-data AndExp :: a -> a -> Exp Bool
-type instance Eval (AndExp a b) = a && b
-
-data NotExp :: Bool -> Exp Bool
-type instance Eval (NotExp a) = Not a
-
-data OrExp :: a -> a -> Exp Bool
-type instance Eval (OrExp a b) = a || b
-
-data NotEqExp :: a -> a -> Exp Bool
-type instance Eval (NotEqExp a b) = a /= b
 
 data EqExp :: a -> a -> Exp Bool
 type instance Eval (EqExp a b) = a == b
+
+data NotEqExp :: a -> a -> Exp Bool
+type instance Eval (NotEqExp a b) = a /= b
 
 -- (,)
 type instance (==) '(a1, a2) '(b1, b2) = a1 == b1 && a2 == b2
@@ -74,24 +95,16 @@ type instance (==) ('Right _) ('Left _) = 'False
 type instance (==) '() '() = 'True
 
 -- Ordering
-type instance (==) 'LT 'EQ = 'False
-type instance (==) 'LT 'GT = 'False
-type instance (==) 'LT 'LT = 'True
-type instance (==) 'EQ 'GT = 'False
-type instance (==) 'EQ 'LT = 'False
-type instance (==) 'EQ 'EQ = 'True
-type instance (==) 'GT 'LT = 'False
-type instance (==) 'GT 'EQ = 'False
-type instance (==) 'GT 'GT = 'True
+type instance (==) (x :: Ordering) (y :: Ordering) = x Type.== y
 
 -- Symbol
-type instance (==) x y = Eval (Case '[ 'LT --> 'False
-                                     , 'GT --> 'False
-                                     , 'EQ --> 'True
-                                     ] (TL.CmpSymbol x y))
+type instance (==) (x :: Symbol) (y :: Symbol) = x Type.== y 
 
 -- Nat
-type instance (==) x y = Eval (Case '[ 'LT --> 'False
-                                     , 'GT --> 'False
-                                     , 'EQ --> 'True
-                                     ] (TL.CmpNat x y))
+type instance (==) (x :: Nat) (y :: Nat) = x Type.== y
+
+-- Bool
+type instance (==) (x :: Bool) (y :: Bool) = x Type.== y
+
+-- Type
+type instance (==) (x :: Type) (y :: Type) = x Type.== y
