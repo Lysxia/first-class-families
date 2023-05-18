@@ -41,7 +41,7 @@ import qualified GHC.TypeLits as TL
 
 import Fcf.Core
 import Fcf.Combinators
-import Fcf.Data.Bool (Not)
+import Fcf.Data.Bool (NotExp)
 
 data (+) :: Nat -> Nat -> Exp Nat
 type instance Eval ((+) a b) = a TL.+ b
@@ -62,8 +62,8 @@ data (>=) :: Nat -> Nat -> Exp Bool
 type instance Eval ((>=) a b) = b TL.<=? a
 
 data (<) :: Nat -> Nat -> Exp Bool
-type instance Eval ((<) a b) = Eval (Not =<< (a >= b))
+type instance Eval ((<) a b) = Eval (NotExp =<< (a >= b))
 
 data (>) :: Nat -> Nat -> Exp Bool
-type instance Eval ((>) a b) = Eval (Not =<< (a <= b))
+type instance Eval ((>) a b) = Eval (NotExp =<< (a <= b))
 

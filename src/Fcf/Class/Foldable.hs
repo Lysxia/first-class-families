@@ -52,7 +52,7 @@ import Fcf.Combinators (Pure, Pure1, type (<=<))
 import Fcf.Data.Function (Bicomap)
 import Fcf.Class.Monoid
 import Fcf.Class.Monoid.Types (Endo(..), UnEndo)
-import Fcf.Data.Bool (type (&&), type (||))
+import qualified Fcf.Data.Bool as Bool (Or, And)
 import Fcf.Data.Nat (Nat, type (+))
 
 -- $setup
@@ -145,7 +145,7 @@ type instance Eval (Foldr f y ('Right x)) = Eval (f x y)
 -- Eval (And '[ 'True, 'True, 'False]) :: Bool
 -- = 'False
 data And :: t Bool -> Exp Bool
-type instance Eval (And lst) = Eval (Foldr (&&) 'True lst)
+type instance Eval (And lst) = Eval (Foldr Bool.And 'True lst)
 
 -- | Whether all elements of the list satisfy a predicate.
 --
@@ -161,7 +161,7 @@ type instance Eval (And lst) = Eval (Foldr (&&) 'True lst)
 -- Eval (All (Flip (<) 5) '[0,1,2,3,4,5]) :: Bool
 -- = 'False
 data All :: (a -> Exp Bool) -> t a -> Exp Bool
-type instance Eval (All p lst) = Eval (Foldr (Bicomap p Pure (&&)) 'True lst)
+type instance Eval (All p lst) = Eval (Foldr (Bicomap p Pure Bool.And) 'True lst)
 
 
 -- | Give @True@ if any of the booleans in the list are @True@.
@@ -176,7 +176,7 @@ type instance Eval (All p lst) = Eval (Foldr (Bicomap p Pure (&&)) 'True lst)
 -- Eval (Or '[ 'False, 'False]) :: Bool
 -- = 'False
 data Or :: t Bool -> Exp Bool
-type instance Eval (Or lst) = Eval (Foldr (||) 'False lst)
+type instance Eval (Or lst) = Eval (Foldr Bool.Or 'False lst)
 
 
 -- | Whether any element of the list satisfies a predicate.
@@ -194,7 +194,7 @@ type instance Eval (Or lst) = Eval (Foldr (||) 'False lst)
 -- Eval (Any (Flip (<) 0) '[0,1,2,3,4,5]) :: Bool
 -- = 'False
 data Any :: (a -> Exp Bool) -> t a -> Exp Bool
-type instance Eval (Any p lst) = Eval (Foldr (Bicomap p Pure (||)) 'False lst)
+type instance Eval (Any p lst) = Eval (Foldr (Bicomap p Pure Bool.Or) 'False lst)
 
 
 -- | Sum a @Nat@-list.

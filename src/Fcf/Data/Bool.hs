@@ -4,6 +4,7 @@
     TypeFamilies,
     TypeInType,
     TypeOperators,
+    StandaloneKindSignatures,
     UndecidableInstances #-}
 
 -- | Booleans.
@@ -11,13 +12,20 @@
 -- Note that the operations from this module conflict with
 -- "Data.Type.Bool".
 module Fcf.Data.Bool
-  ( UnBool
-  , type (||)
+  ( -- * Booleans
+    type (||)
   , type (&&)
   , Not
+    -- * Booleans, can be partially applied
+  , And
+  , Or
+  , NotExp
+    -- ** Utility
+  , UnBool
   ) where
 
 import Fcf.Core
+import Data.Bool () -- ^ imported for haddock
 
 -- $setup
 -- >>> :set -XDataKinds -XTypeOperators
@@ -39,35 +47,85 @@ type instance Eval (UnBool fal tru 'True ) = Eval tru
 infixr 2 ||
 infixr 3 &&
 
--- | 'Exp' version of 'Data.Type.Bool.|| that can be partially applied
+-- | 
+-- @
+-- type __(||)__ :: 'Bool' -> 'Bool' -> 'Bool'
+-- @
+--
+-- Type-level version of 'Data.Bool.||'
 --
 -- === __Example__
--- 
--- >>> :kind! Eval (Foldr (||) 'False '['False,'False,'True])
--- Eval (Foldr (||) 'False '['False,'False,'True]) :: Bool
+--
+-- >>> :kind! 'True || 'False
+-- 'True || 'False :: Bool
 -- = 'True
 --
-data (||) :: Bool -> Bool -> Exp Bool
-type instance Eval ('True || b) = 'True
-type instance Eval (a || 'True) = 'True
-type instance Eval ('False || b) = b
-type instance Eval (a || 'False) = a
+type (||) :: Bool -> Bool -> Bool
+type family (||) a b where
+  'False || b = b
+  'True || _ = 'True
 
--- | 'Exp' version of 'Data.Type.Bool.&& that can be partially applied
+-- | 'Exp' version of '(||)' that can be partially applied
 --
 -- === __Example__
 -- 
--- >>> :kind! Eval (Foldr (&&) 'True '['True,'False,'True])
--- Eval (Foldr (&&) 'True '['True,'False,'True]) :: Bool
+-- >>> :kind! Eval (Foldr Or 'False '['False,'False,'True])
+-- Eval (Foldr Or 'False '['False,'False,'True]) :: Bool
+-- = 'True
+--
+data Or :: Bool -> Bool -> Exp Bool 
+type instance Eval (Or a b) = a || b
+
+
+-- | 
+-- @
+-- type __(&&)__ :: 'Bool' -> 'Bool' -> 'Bool'
+-- @
+--
+-- Type-level version of 'Data.Bool.&&'
+--
+-- === __Example__
+--
+-- >>> :kind! 'True && 'False
+-- 'True && 'False :: Bool
 -- = 'False
 --
-data (&&) :: Bool -> Bool -> Exp Bool
-type instance Eval ('False && b) = 'False
-type instance Eval (a && 'False) = 'False
-type instance Eval ('True && b) = b
-type instance Eval (a && 'True) = a
+type (&&) :: Bool -> Bool -> Bool
+type family (&&) a b where
+  'True && b = b
+  'False && _ = 'False
 
--- | 'Exp' version of 'Data.Type.Bool.Not that can be partially applied
+-- | 'Exp' version of '(&&)' that can be partially applied
+--
+-- === __Example__
+-- 
+-- >>> :kind! Eval (Foldr And 'True '['True,'False,'True])
+-- Eval (Foldr And 'True '['True,'False,'True]) :: Bool
+-- = 'False
+--
+data And :: Bool -> Bool -> Exp Bool
+type instance Eval (And a b) = a && b
+
+
+-- | 
+-- @
+-- type __Not__ :: 'Bool' -> 'Bool'
+-- @
+--
+-- Type-level version of 'not'
+--
+-- === __Example__
+--
+-- >>> :kind! Not 'True || 'False
+-- Not 'True || 'False :: Bool
+-- = 'False
+--
+type Not :: Bool -> Bool
+type family Not (a :: Bool) :: Bool where 
+  Not 'True = 'False
+  Not 'False = 'True
+
+-- | 'Exp' version of 'Not' that can be partially applied
 --
 -- === __Example__
 -- 
@@ -75,6 +133,5 @@ type instance Eval (a && 'True) = a
 -- Eval (FMap Not '[ 'False,'False,'True]) :: [Bool]
 -- = '[ 'True, 'True, 'False]
 --
-data Not :: Bool -> Exp Bool
-type instance Eval (Not 'True)  = 'False
-type instance Eval (Not 'False) = 'True
+data NotExp :: Bool -> Exp Bool
+type instance Eval (NotExp a) = Not a

@@ -355,7 +355,7 @@ type instance Eval (Span p lst) = '( Eval (TakeWhile p lst), Eval (DropWhile p l
 -- Eval (Break (Flip (>) 9) '[1,2,3]) :: ([Nat], [Nat])
 -- = '( '[1, 2, 3], '[])
 data Break :: (a -> Exp Bool) -> [a] -> Exp ([a],[a])
-type instance Eval (Break p lst) = Eval (Span (Not <=< p) lst)
+type instance Eval (Break p lst) = Eval (Span (NotExp <=< p) lst)
 
 
 -- | List of suffixes of a list.
@@ -397,7 +397,7 @@ type family IsPrefixOf_ (xs :: [a]) (ys :: [a]) :: Bool where
   IsPrefixOf_ '[] _ = 'True
   IsPrefixOf_ _ '[] = 'False
   IsPrefixOf_ (x ': xs) (y ': ys) =
-     Eval ((Eval (TyEq x y)) && IsPrefixOf_ xs ys)
+     Eval (TyEq x y) && IsPrefixOf_ xs ys
 
 
 -- | Return @True@ when the first list is a suffix of the second.

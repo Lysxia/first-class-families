@@ -16,26 +16,37 @@ module Fcf.Class.Ord
   , type (>=)
   , type (<)
   , type (>)
+    -- * Order, can be partially applied
+  , CompareExp
+  , LessThanEq
+  , GreaterThanEq
+  , LessThan
+  , GreaterThan
 
     -- ** Default implementations
-  , CompareDefault_
+  , EqualityDefault_
   ) where
 
 import qualified GHC.TypeLits as TL
 
 import Fcf.Core
 import Fcf.Class.Monoid (type (<>))  -- Semigroup Ordering
-import Fcf.Utils (If)
 import Fcf.Class.Eq (type (==), type (/=))
+import Data.Ord () -- ^ imported for haddock
 
 -- $setup
--- >>> :set -XDataKinds -XTypeFamilies -XUndecidableInstances -XPolyKinds
--- >>> import Fcf.Utils (TyEq, If)
 -- >>> import Fcf.Core (Eval)
--- >>> import Fcf.Class.Eq (type (==))
--- >>> import Fcf.Data.Bool (type (||))
+-- >>> import Fcf.Class.Eq (type (==), EqExp)
+-- >>> import Fcf.Combinators (type (<=<))
+-- >>> import Fcf.Functor (FMap)
+-- >>> import Fcf.Data.List (Filter)
 
--- | Type-level 'compare' for totally ordered data types.
+-- |
+-- @
+-- type __Compare__ :: a -> a -> 'Ordering'
+-- @
+--
+-- Type-level 'compare' for totally ordered data types.
 --
 -- === __Example__
 --
@@ -43,146 +54,202 @@ import Fcf.Class.Eq (type (==), type (/=))
 -- Eval (Compare "a" "b") :: Ordering
 -- = 'LT
 --
--- >>> :kind! Eval (Compare '[1, 2, 3] '[1, 2, 3])
--- Eval (Compare '[1, 2, 3] '[1, 2, 3]) :: Ordering
+-- >>> :kind! Compare '[1, 2, 3] '[1, 2, 3]
+-- Compare '[1, 2, 3] '[1, 2, 3] :: Ordering
 -- = 'EQ
 --
--- >>> :kind! Eval (Compare '[1, 3] '[1, 2])
--- Eval (Compare '[1, 3] '[1, 2]) :: Ordering
+-- >>> :kind! Compare '[1, 3] '[1, 2]
+-- Compare '[1, 3] '[1, 2] :: Ordering
 -- = 'GT
-data Compare :: a -> a -> Exp Ordering
+type Compare :: a -> a -> Ordering
+type family Compare (x :: a) (y :: a) :: Ordering
+
+-- | 'Exp' version of 'Compare' that can be partially applied
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (FMap (CompareExp 5) '[1,9,4,5])
+-- Eval (FMap (CompareExp 5) '[1,9,4,5]) :: [Ordering]
+-- = '['GT,'LT,'GT,'EQ]
+data CompareExp :: a -> a -> Exp Ordering
+type instance Eval (CompareExp x y) = Compare x y
 
 -- (,)
-type instance Eval (Compare '(a1, a2) '(b1, b2)) = Eval (Compare a1 b1) <> Eval (Compare a2 b2)
+type instance (Compare '(a1, a2) '(b1, b2)) = Compare a1 b1 <> Compare a2 b2
 
 -- (,,)
-type instance Eval (Compare '(a1, a2, a3) '(b1, b2, b3))
-  = Eval (Compare a1 b1) <> Eval (Compare a2 b2) <> Eval (Compare a3 b3)
+type instance (Compare '(a1, a2, a3) '(b1, b2, b3))
+  = Compare a1 b1 <> Compare a2 b2 <> Compare a3 b3
 
 -- Either
-type instance Eval (Compare ('Left a) ('Left b)) = Eval (Compare a b)
-type instance Eval (Compare ('Right a) ('Right b)) = Eval (Compare a b)
-type instance Eval (Compare ('Left _a) ('Right _b)) = 'LT
-type instance Eval (Compare ('Right _a) ('Left _b)) = 'GT
+type instance (Compare ('Left a) ('Left b)) = Compare a b
+type instance (Compare ('Right a) ('Right b)) = Compare a b
+type instance (Compare ('Left _a) ('Right _b)) = 'LT
+type instance (Compare ('Right _a) ('Left _b)) = 'GT
 
 -- Maybe
-type instance Eval (Compare 'Nothing 'Nothing) = 'EQ
-type instance Eval (Compare ('Just a) ('Just b)) = Eval (Compare a b)
-type instance Eval (Compare 'Nothing ('Just _b)) = 'LT
-type instance Eval (Compare ('Just _a) 'Nothing) = 'GT
+type instance (Compare 'Nothing 'Nothing) = 'EQ
+type instance (Compare ('Just a) ('Just b)) = Compare a b
+type instance (Compare 'Nothing ('Just _b)) = 'LT
+type instance (Compare ('Just _a) 'Nothing) = 'GT
 
 -- List
-type instance Eval (Compare '[] '[]) = 'EQ
-type instance Eval (Compare (x ': xs) (y ': ys)) = Eval (Compare x y) <> Eval (Compare xs ys)
-type instance Eval (Compare '[] (_y ': _ys)) = 'LT
-type instance Eval (Compare (_x ': _xs) '[]) = 'GT
+type instance (Compare '[] '[]) = 'EQ
+type instance (Compare (x ': xs) (y ': ys)) = Compare x y <> Compare xs ys
+type instance (Compare '[] (_y ': _ys)) = 'LT
+type instance (Compare (_x ': _xs) '[]) = 'GT
 
 -- Bool
-type instance Eval (Compare (a :: Bool) a) = 'EQ
-type instance Eval (Compare 'False 'True) = 'GT
-type instance Eval (Compare 'True 'False) = 'GT
+type instance (Compare (a :: Bool) a) = 'EQ
+type instance (Compare 'False 'True) = 'GT
+type instance (Compare 'True 'False) = 'GT
 
 -- Ordering
-type instance Eval (Compare (a :: Ordering) a) = 'EQ
-type instance Eval (Compare 'LT 'EQ) = 'LT
-type instance Eval (Compare 'LT 'GT) = 'LT
-type instance Eval (Compare 'EQ 'GT) = 'LT
-type instance Eval (Compare 'EQ 'LT) = 'GT
-type instance Eval (Compare 'GT 'LT) = 'GT
-type instance Eval (Compare 'GT 'EQ) = 'GT
+type instance (Compare (a :: Ordering) a) = 'EQ
+type instance (Compare 'LT 'EQ) = 'LT
+type instance (Compare 'LT 'GT) = 'LT
+type instance (Compare 'EQ 'GT) = 'LT
+type instance (Compare 'EQ 'LT) = 'GT
+type instance (Compare 'GT 'LT) = 'GT
+type instance (Compare 'GT 'EQ) = 'GT
 
 -- Symbol
-type instance Eval (Compare a b) = TL.CmpSymbol a b
+type instance (Compare a b) = TL.CmpSymbol a b
 
 -- Nat
-type instance Eval (Compare a b) = TL.CmpNat a b
+type instance (Compare a b) = TL.CmpNat a b
 
 -- ()
-type instance Eval (Compare (a :: ()) b) = 'EQ
+type instance (Compare (a :: ()) b) = 'EQ
 
--- | Default implementation of 'Compare' provided you have defined a type instance for '=='
+-- | 
+-- @
+-- type __EqualityDefault___ :: a -> a -> 'Bool'
+-- @
+--
+-- Default implementation of '==' provided you have defined a type instance for 'Compare'
 --
 -- === __Usage__
 --
--- To define an instance of 'Compare' for a custom @MyType@ for which you already have
--- an instance of '==':
---
--- First: Create a type level function that can be partially appled that handles less-than for @MyType@
+-- To define an instance of '==' for a custom @MyType@ for which you already have
+-- an instance of 'Compare:
 --
 -- @
--- data Lambda :: MyType -> MyType -> 'Exp' 'Bool'
--- type instance 'Eval' (Lambda x y) = 'True
--- @
---
--- Second: Create a your type instance using 'CompareDefault_'
---
--- @
--- type instance 'Eval' ('Compare' x (y :: MyType)) = 'CompareDefault_' Lambda x y
+-- type instance ('==') x (y :: MyType) = 'EqualityDefault_' x y
 -- @
 --
 -- ==== __Example__
 -- 
 -- >>> data Test = A | B
 --
--- >>> type instance (==) (x :: Test) y = Eval (TyEq x y) -- Equality instance
---
--- >>> :{
--- >>> type family TestLessThanEq (x :: Test) (y :: Test) where -- (Optional) it is for easier pattern matching (lets us write less cases)
--- >>>   TestLessThanEq _ 'A = 'True
--- >>>   TestLessThanEq 'B _ = 'True
--- >>>   TestLessThanEq _ _ = 'False
--- >>> :}
--- >>> data CompareDefaultLambda :: Test -> Test -> Exp Bool -- lambda for CompareDefault_
--- >>> type instance Eval (CompareDefaultLambda x y) = TestLessThanEq x y
---
--- >>> type instance Eval (Compare x (y :: Test)) = CompareDefault_ CompareDefaultLambda x y
--- >>> :kind! Eval (Compare 'A 'B)
--- Eval (Compare 'A 'B) :: Ordering
--- = 'GT
---        
-type CompareDefault_ :: 
-     (a -> a -> Exp Bool) -- ^ function to compare if first arg is less than second arg
-  -> a
-  -> a 
-  -> Ordering
-type CompareDefault_ f x y = If (x == y) 'EQ (If (Eval (f x y)) 'LT 'GT)
-
--- | "Smaller than or equal to". Type-level version of @('<=')@.
---
--- === __Example__
---
--- >>> :kind! Eval ("b" <= "a")
--- Eval ("b" <= "a") :: Bool
+-- >>> type instance (Compare 'A 'A) = 'EQ
+-- >>> type instance (Compare 'A 'B) = 'GT
+-- >>> type instance (Compare 'B 'B) = 'EQ
+-- >>> type instance (Compare 'B 'A) = 'LT
+-- >>> type instance (==) x (y :: Test) = EqualityDefault_ x y
+-- >>> :kind! 'A == 'B
+-- 'A == 'B :: Bool
 -- = 'False
-data (<=) :: a -> a -> Exp Bool
-type instance Eval ((<=) a b) = Eval (Compare a b) /= 'GT
+--        
+type EqualityDefault_ :: a -> a -> Bool
+type EqualityDefault_ x y = Compare x y == 'EQ
 
--- | "Greater than or equal to". Type-level version of @('>=')@.
+-- |
+-- @
+-- type __(<=)__ :: a -> a -> 'Bool'
+-- @
+--
+-- "Smaller than or equal to". Type-level version of @('Data.Ord.<=')@.
 --
 -- === __Example__
 --
--- >>> :kind! Eval ("b" >= "a")
--- Eval ("b" >= "a") :: Bool
--- = 'True
-data (>=) :: a -> a -> Exp Bool
-type instance Eval ((>=) a b) = Eval (Compare a b) /= 'LT
+-- >>> :kind! "b" <= "a"
+-- "b" <= "a" :: Bool
+-- = 'False
+type (<=) :: a -> a -> Bool
+type (<=) a b = Compare a b /= 'GT
 
--- | "Smaller than". Type-level version of @('<')@.
+-- | 'Exp' version of @'<='@ that can be partially applied
 --
 -- === __Example__
 --
--- >>> :kind! Eval ("a" < "b")
--- Eval ("a" < "b") :: Bool
--- = 'True
-data (<) :: a -> a -> Exp Bool
-type instance Eval ((<) a b) = Eval (Compare a b) == 'LT
+-- >>> :kind! Filter (LessThanEq 5) '[1,5,9]
+-- Filter (LessThanEq 5) '[1,5,9] :: [Nat]
+-- = '[1,5]
+data LessThanEq :: a -> a -> Exp Bool
+type instance Eval (LessThanEq x y) = x <= y
 
--- | "Greater than". Type-level version of @('>')@.
+-- |
+-- @
+-- type __(>=)__ :: a -> a -> 'Bool'
+-- @
+--
+-- "Greater than or equal to". Type-level version of @('Data.Ord.>=')@.
 --
 -- === __Example__
 --
--- >>> :kind! Eval ("b" > "a")
--- Eval ("b" > "a") :: Bool
+-- >>> :kind! "b" >= "a"
+-- "b" >= "a" :: Bool
 -- = 'True
-data (>) :: a -> a -> Exp Bool
-type instance Eval ((>) a b) = Eval (Compare a b) == 'GT
+type (>=) :: a -> a -> Bool
+type (>=) a b = Compare a b /= 'LT
+
+-- | 'Exp' version of @'>='@ that can be partially applied
+--
+-- === __Example__
+--
+-- >>> :kind! Filter (GreaterThanEq 5) '[1,5,9]
+-- Filter (GreaterThanEq 5) '[1,5,9] :: [Nat]
+-- = '[5,9]
+data GreaterThanEq :: a -> a -> Exp Bool
+type instance Eval (GreaterThanEq x y) = x >= y
+
+-- | 
+-- @
+-- type __(<)__ :: a -> a -> 'Bool'
+-- @
+--
+-- "Smaller than". Type-level version of @('Data.Ord.<')@.
+--
+-- === __Example__
+--
+-- >>> :kind! "a" < "b"
+-- "a" < "b" :: Bool
+-- = 'True
+type (<) :: a -> a -> Bool
+type (<) a b = Compare a b == 'LT
+
+-- | 'Exp' version of @'<'@ that can be partially applied
+--
+-- === __Example__
+--
+-- >>> :kind! Filter (LessThan 5) '[1,5,9]
+-- Filter (LessThan 5) '[1,5,9] :: [Nat]
+-- = '[1]
+data LessThan :: a -> a -> Exp Bool
+type instance Eval (LessThan x y) = x < y
+
+-- | 
+-- @
+-- type __(>)__ :: a -> a -> Exp 'Bool'
+-- @
+--
+-- "Greater than". Type-level version of @('Data.Ord.>')@.
+--
+-- === __Example__
+--
+-- >>> :kind! "b" > "a"
+-- "b" > "a" :: Bool
+-- = 'True
+type (>) :: a -> a -> Bool
+type (>) a b = Compare a b == 'GT
+
+-- | 'Exp' version of @'>'@ that can be partially applied
+--
+-- === __Example__
+--
+-- >>> :kind! Filter (GreaterThan 5) '[1,5,9]
+-- Filter (GreaterThan 5) '[1,5,9] :: [Nat]
+-- = '[9]
+data GreaterThan :: a -> a -> Exp Bool
+type instance Eval (GreaterThan x y) = x > y 

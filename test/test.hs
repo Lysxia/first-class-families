@@ -49,22 +49,22 @@ _ = Refl :: ('[ '( '(), 'LT) ] == '[ '( '(), 'LT) ]) :~: 'True
 
 -- ** Ord
 
-_ = Refl :: Eval (Compare '( '(), 0 ) '( '(), 1 )) :~: 'LT
-_ = Refl :: Eval (Compare '( 1, 3 ) '( 1, 2 )) :~: 'GT
-_ = Refl :: Eval (Compare ('Left '()) ('Right 'LT)) :~: 'LT
-_ = Refl :: Eval (Compare ('Right 'EQ) ('Right 'EQ)) :~: 'EQ
-_ = Refl :: Eval (Compare '[ 'LT, 'EQ, 'GT ] '[ 'LT, 'EQ, 'GT ]) :~: 'EQ
-_ = Refl :: Eval (Compare 'True 'True) :~: 'EQ
-_ = Refl :: Eval (Compare "A" "B") :~: 'LT
+_ = Refl :: Compare '( '(), 0 ) '( '(), 1 ) :~: 'LT
+_ = Refl :: Compare '( 1, 3 ) '( 1, 2 ) :~: 'GT
+_ = Refl :: Compare ('Left '()) ('Right 'LT) :~: 'LT
+_ = Refl :: Compare ('Right 'EQ) ('Right 'EQ) :~: 'EQ
+_ = Refl :: Compare '[ 'LT, 'EQ, 'GT ] '[ 'LT, 'EQ, 'GT ] :~: 'EQ
+_ = Refl :: Compare 'True 'True :~: 'EQ
+_ = Refl :: Compare "A" "B" :~: 'LT
 
-_ = Refl :: Eval (1 <= 1) :~: 'True
-_ = Refl :: Eval (2 <= 1) :~: 'False
-_ = Refl :: Eval (1 < 1) :~: 'False
-_ = Refl :: Eval (1 < 2) :~: 'True
-_ = Refl :: Eval (1 >= 1) :~: 'True
-_ = Refl :: Eval (1 >= 2) :~: 'False
-_ = Refl :: Eval (1 > 1) :~: 'False
-_ = Refl :: Eval (2 > 1) :~: 'True
+_ = Refl :: 1 <= 1 :~: 'True
+_ = Refl :: 2 <= 1 :~: 'False
+_ = Refl :: 1 < 1 :~: 'False
+_ = Refl :: 1 < 2 :~: 'True
+_ = Refl :: 1 >= 1 :~: 'True
+_ = Refl :: 1 >= 2 :~: 'False
+_ = Refl :: 1 > 1 :~: 'False
+_ = Refl :: 2 > 1 :~: 'True
 
 -- ** Monoid
 
