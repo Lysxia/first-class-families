@@ -5,7 +5,6 @@
     PolyKinds,
     RankNTypes,
     TypeFamilies,
-    TypeInType,
     TypeOperators,
     UndecidableInstances #-}
 

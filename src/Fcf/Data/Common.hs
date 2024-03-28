@@ -2,7 +2,6 @@
     DataKinds,
     PolyKinds,
     TypeFamilies,
-    TypeInType,
     TypeOperators #-}
 
 -- | Common data types: tuples, 'Either', 'Maybe'.

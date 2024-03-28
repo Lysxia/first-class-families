@@ -1,7 +1,6 @@
 {-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE PolyKinds              #-}
 {-# LANGUAGE TypeFamilies           #-}
-{-# LANGUAGE TypeInType             #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 {-# OPTIONS_GHC -Wall                       #-}
