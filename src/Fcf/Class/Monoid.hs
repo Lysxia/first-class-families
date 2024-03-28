@@ -3,7 +3,6 @@
     DataKinds,
     PolyKinds,
     TypeFamilies,
-    TypeInType,
     TypeOperators,
     UndecidableInstances #-}
 
