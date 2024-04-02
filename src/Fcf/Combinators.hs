@@ -14,6 +14,7 @@ module Fcf.Combinators
   , Pure2
   , Pure3
   , type (=<<)
+  , type (>>=)
   , type (<=<)
   , LiftM
   , LiftM2
