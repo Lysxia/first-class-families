@@ -25,15 +25,16 @@ import Fcf.Combinators (Pure)
 -- >>> import Fcf.Combinators (Flip)
 -- >>> import Fcf.Data.Nat (Nat, type (+), type (-))
 -- >>> import Fcf.Data.Symbol (Symbol)
+-- >>> import Numeric.Natural (Natural)
 
 -- | Type-level 'Data.Bifunctor.bimap'.
 --
 -- === __Example__
 --
 -- >>> data Example where Ex :: a -> Example  -- Hide the type of examples to avoid brittleness in different GHC versions
--- >>> :kind! 'Ex (Eval (Bimap ((+) 1) (Flip (-) 1) '(2, 4)) :: (Nat, Nat))
--- 'Ex (Eval (Bimap ((+) 1) (Flip (-) 1) '(2, 4)) :: (Nat, Nat)) :: Example
--- = 'Ex '(3, 3)
+-- >>> :kind! Ex (Eval (Bimap ((+) 1) (Flip (-) 1) '(2, 4)) :: (Natural, Natural))
+-- Ex (Eval (Bimap ((+) 1) (Flip (-) 1) '(2, 4)) :: (Natural, Natural)) :: Example
+-- = Ex '(3, 3)
 data Bimap :: (a -> Exp a') -> (b -> Exp b') -> f a b -> Exp (f a' b')
 
 -- (,)
@@ -50,7 +51,7 @@ type instance Eval (Bimap f g ('Right y)) = 'Right (Eval (g y))
 -- === __Example__
 --
 -- >>> :kind! Eval (First ((+) 1) '(3,"a"))
--- Eval (First ((+) 1) '(3,"a")) :: (Nat, Symbol)
+-- Eval (First ((+) 1) '(3,"a")) :: (Natural, Symbol)
 -- = '(4, "a")
 data First :: (a -> Exp b) -> f a c -> Exp (f b c)
 type instance Eval (First f x) = Eval (Bimap f Pure x)
@@ -63,7 +64,7 @@ type instance Eval (First f x) = Eval (Bimap f Pure x)
 -- === __Example__
 --
 -- >>> :kind! Eval (Second ((+) 1) '("a",3))
--- Eval (Second ((+) 1) '("a",3)) :: (Symbol, Nat)
+-- Eval (Second ((+) 1) '("a",3)) :: (Symbol, Natural)
 -- = '("a", 4)
 data Second :: (c -> Exp d) -> f a c -> Exp (f a d)
 type instance Eval (Second g x) = Eval (Bimap Pure g x)

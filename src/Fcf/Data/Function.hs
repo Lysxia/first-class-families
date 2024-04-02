@@ -27,9 +27,9 @@ infixl 1 &
 --
 -- === __Example__
 --
--- >>> :kind! Eval ('( 'True, 'Nothing) & Fst)
--- Eval ('( 'True, 'Nothing) & Fst) :: Bool
--- = 'True
+-- >>> :kind! Eval ('(True, Nothing) & Fst)
+-- Eval ('(True, Nothing) & Fst) :: Bool
+-- = True
 data (&) :: a -> (a -> Exp b) -> Exp b
 type instance Eval (x & f) = Eval (f x)
 
@@ -37,9 +37,9 @@ type instance Eval (x & f) = Eval (f x)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (((&&) `On` Fst) '( 'True, 'Nothing) '( 'False, 'Just '()))
--- Eval (((&&) `On` Fst) '( 'True, 'Nothing) '( 'False, 'Just '())) :: Bool
--- = 'False
+-- >>> :kind! Eval (((&&) `On` Fst) '(True, Nothing) '(False, Just '()))
+-- Eval (((&&) `On` Fst) '(True, Nothing) '(False, Just '())) :: Bool
+-- = False
 data On :: (b -> b -> Exp c) -> (a -> Exp b) -> a -> a -> Exp c
 type instance Eval (On r f x y) = Eval (r (Eval (f x)) (Eval (f y)))
 
@@ -47,8 +47,8 @@ type instance Eval (On r f x y) = Eval (r (Eval (f x)) (Eval (f y)))
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Bicomap Fst Pure (||) '( 'False, 'Nothing) 'True)
--- Eval (Bicomap Fst Pure (||) '( 'False, 'Nothing) 'True) :: Bool
--- = 'True
+-- >>> :kind! Eval (Bicomap Fst Pure (||) '(False, Nothing) True)
+-- Eval (Bicomap Fst Pure (||) '(False, Nothing) True) :: Bool
+-- = True
 data Bicomap :: (a -> Exp c) -> (b -> Exp d) -> (c -> d -> Exp e) -> a -> b -> Exp e
 type instance Eval (Bicomap f g r x y) = Eval (r (Eval (f x)) (Eval (g y)))

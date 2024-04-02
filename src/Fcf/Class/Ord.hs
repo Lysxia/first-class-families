@@ -37,15 +37,15 @@ import Fcf.Utils (TyEq)
 --
 -- >>> :kind! Eval (Compare "a" "b")
 -- Eval (Compare "a" "b") :: Ordering
--- = 'LT
+-- = LT
 --
 -- >>> :kind! Eval (Compare '[1, 2, 3] '[1, 2, 3])
 -- Eval (Compare '[1, 2, 3] '[1, 2, 3]) :: Ordering
--- = 'EQ
+-- = EQ
 --
 -- >>> :kind! Eval (Compare '[1, 3] '[1, 2])
 -- Eval (Compare '[1, 3] '[1, 2]) :: Ordering
--- = 'GT
+-- = GT
 data Compare :: a -> a -> Exp Ordering
 
 -- (,)
@@ -108,7 +108,7 @@ type a ~/= b = Eval (Not (a ~== b))
 --
 -- >>> :kind! Eval ("b" <= "a")
 -- Eval ("b" <= "a") :: Bool
--- = 'False
+-- = False
 data (<=) :: a -> a -> Exp Bool
 type instance Eval ((<=) a b) = Compare a b ~/= 'GT
 
@@ -118,7 +118,7 @@ type instance Eval ((<=) a b) = Compare a b ~/= 'GT
 --
 -- >>> :kind! Eval ("b" >= "a")
 -- Eval ("b" >= "a") :: Bool
--- = 'True
+-- = True
 data (>=) :: a -> a -> Exp Bool
 type instance Eval ((>=) a b) = Compare a b ~/= 'LT
 
@@ -128,7 +128,7 @@ type instance Eval ((>=) a b) = Compare a b ~/= 'LT
 --
 -- >>> :kind! Eval ("a" < "b")
 -- Eval ("a" < "b") :: Bool
--- = 'True
+-- = True
 data (<) :: a -> a -> Exp Bool
 type instance Eval ((<) a b) = Compare a b ~== 'LT
 
@@ -138,6 +138,6 @@ type instance Eval ((<) a b) = Compare a b ~== 'LT
 --
 -- >>> :kind! Eval ("b" > "a")
 -- Eval ("b" > "a") :: Bool
--- = 'True
+-- = True
 data (>) :: a -> a -> Exp Bool
 type instance Eval ((>) a b) = Compare a b ~== 'GT

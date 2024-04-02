@@ -29,6 +29,7 @@ import GHC.TypeLits (AppendSymbol)
 
 -- $setup
 -- >>> import GHC.TypeLits (Nat)
+-- >>> import Numeric.Natural (Natural)
 
 -- | Type-level semigroup composition @('Data.Semigroup.<>')@.
 --
@@ -86,17 +87,17 @@ type instance Eval MEmpty_ = MEmpty
 --
 -- === __Examples__
 --
--- >>> :kind! 'LT <> MEmpty
--- 'LT <> MEmpty :: Ordering
--- = 'LT
+-- >>> :kind! LT <> MEmpty
+-- LT <> MEmpty :: Ordering
+-- = LT
 --
--- >>> :kind! MEmpty <> '( 'EQ, '[1, 2])
--- MEmpty <> '( 'EQ, '[1, 2]) :: (Ordering, [Nat])
--- = '( 'EQ, '[1, 2])
+-- >>> :kind! MEmpty <> '(EQ, [1, 2])
+-- MEmpty <> '(EQ, [1, 2]) :: (Ordering, [Natural])
+-- = '(EQ, [1, 2])
 --
--- >>> :kind! '( 'GT, 'Just '()) <> MEmpty
--- '( 'GT, 'Just '()) <> MEmpty :: (Ordering, Maybe ())
--- = '( 'GT, 'Just '())
+-- >>> :kind! '(GT, Just '()) <> MEmpty
+-- '(GT, Just '()) <> MEmpty :: (Ordering, Maybe ())
+-- = '(GT, Just '())
 type family MEmpty :: a
 
 -- (,)

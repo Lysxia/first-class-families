@@ -81,22 +81,26 @@ import Fcf.Data.Nat
 import Fcf.Utils (If, TyEq)
 
 -- $setup
--- >>> :set -XGADTs
--- >>> import Fcf.Core (Eval)
+-- >>> :set -XGADTs -XUndecidableInstances
+-- >>> import Fcf.Core (Exp, Eval)
 -- >>> import Fcf.Combinators
+-- >>> import Fcf.Class.Foldable (Concat)
 -- >>> import Fcf.Class.Monoid ()
+-- >>> import Fcf.Data.Nat
+-- >>> import Fcf.Utils (If, TyEq)
+-- >>> import Data.Type.Ord ()
 -- >>> import qualified GHC.TypeLits as TL
 -- >>> import GHC.TypeLits (Nat)
-
+-- >>> import Numeric.Natural (Natural)
 
 -- | List catenation.
 --
 -- === __Example__
 --
 -- >>> data Example where Ex :: a -> Example  -- Hide the type of examples to avoid brittleness in different GHC versions
--- >>> :kind! 'Ex (Eval ('[1, 2] ++ '[3, 4]) :: [Nat])
--- 'Ex (Eval ('[1, 2] ++ '[3, 4]) :: [Nat]) :: Example
--- = 'Ex '[1, 2, 3, 4]
+-- >>> :kind! Ex (Eval ([1, 2] ++ [3, 4]) :: [Natural])
+-- Ex (Eval ([1, 2] ++ [3, 4]) :: [Natural]) :: Example
+-- = Ex [1, 2, 3, 4]
 --
 data (++) :: [a] -> [a] -> Exp [a]
 type instance Eval ((++) xs ys) = xs <> ys
@@ -134,12 +138,12 @@ type instance Eval (Length (a ': as)) = 1 TL.+ Eval (Length as)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Cons 1 '[2, 3])
--- Eval (Cons 1 '[2, 3]) :: [Nat]
--- = '[1, 2, 3]
--- >>> :kind! Eval (Cons Int '[Char, Maybe Double])
--- Eval (Cons Int '[Char, Maybe Double]) :: [*]
--- = '[Int, Char, Maybe Double]
+-- >>> :kind! Eval (Cons 1 [2, 3])
+-- Eval (Cons 1 [2, 3]) :: [Natural]
+-- = [1, 2, 3]
+-- >>> :kind! Eval (Cons Int [Char, Maybe Double])
+-- Eval (Cons Int [Char, Maybe Double]) :: [*]
+-- = [Int, Char, Maybe Double]
 --
 data Cons :: a -> [a] -> Exp [a]
 type instance Eval (Cons a as) = a ': as
@@ -152,9 +156,9 @@ type instance Eval (Cons2 '(a, b) '(as, bs)) = '(a ': as, b ': bs)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Snoc '[1,2,3] 4)
--- Eval (Snoc '[1,2,3] 4) :: [Nat]
--- = '[1, 2, 3, 4]
+-- >>> :kind! Eval (Snoc [1,2,3] 4)
+-- Eval (Snoc [1,2,3] 4) :: [Natural]
+-- = [1, 2, 3, 4]
 data Snoc :: [a] -> a -> Exp [a]
 type instance Eval (Snoc lst a) = Eval (lst ++ '[a])
 
@@ -169,9 +173,9 @@ type instance Eval (Rev (x ': xs) ys) = Eval (Rev xs (x ': ys))
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Reverse '[1,2,3,4,5])
--- Eval (Reverse '[1,2,3,4,5]) :: [Nat]
--- = '[5, 4, 3, 2, 1]
+-- >>> :kind! Eval (Reverse [1,2,3,4,5])
+-- Eval (Reverse [1,2,3,4,5]) :: [Natural]
+-- = [5, 4, 3, 2, 1]
 data Reverse :: [a] -> Exp [a]
 type instance Eval (Reverse l) = Eval (Rev l '[])
 
@@ -179,9 +183,9 @@ type instance Eval (Reverse l) = Eval (Rev l '[])
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Intersperse 0 '[1,2,3,4])
--- Eval (Intersperse 0 '[1,2,3,4]) :: [Nat]
--- = '[1, 0, 2, 0, 3, 0, 4]
+-- >>> :kind! Eval (Intersperse 0 [1,2,3,4])
+-- Eval (Intersperse 0 [1,2,3,4]) :: [Natural]
+-- = [1, 0, 2, 0, 3, 0, 4]
 data Intersperse :: a -> [a] -> Exp [a]
 type instance Eval (Intersperse _   '[]      ) = '[]
 type instance Eval (Intersperse sep (x ': xs)) = x ': Eval (PrependToAll sep xs)
@@ -195,9 +199,9 @@ type instance Eval (PrependToAll sep (x ': xs)) = sep ': x ': Eval (PrependToAll
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Intercalate '[", "] '[ '["Lorem"], '["ipsum"], '["dolor"] ])
--- Eval (Intercalate '[", "] '[ '["Lorem"], '["ipsum"], '["dolor"] ]) :: [TL.Symbol]
--- = '["Lorem", ", ", "ipsum", ", ", "dolor"]
+-- >>> :kind! Eval (Intercalate '[", "] [ '["Lorem"], '["ipsum"], '["dolor"] ])
+-- Eval (Intercalate '[", "] [ '["Lorem"], '["ipsum"], '["dolor"] ]) :: [TL.Symbol]
+-- = ["Lorem", ", ", "ipsum", ", ", "dolor"]
 data Intercalate :: [a] -> [[a]] -> Exp [a]
 type instance Eval (Intercalate xs xss) = Eval (Concat =<< Intersperse xs xss)
 
@@ -221,13 +225,13 @@ type instance Eval (UnfoldrCase _ 'Nothing) = '[]
 -- >>> :{
 -- type instance Eval (ToThree b) =
 --   If (Eval (b Fcf.>= 4))
---     'Nothing
---     ('Just '(b, b TL.+ 1))
+--     Nothing
+--     (Just '(b, b TL.+ 1))
 -- :}
 --
 -- >>> :kind! Eval (Unfoldr ToThree 0)
--- Eval (Unfoldr ToThree 0) :: [Nat]
--- = '[0, 1, 2, 3]
+-- Eval (Unfoldr ToThree 0) :: [Natural]
+-- = [0, 1, 2, 3]
 --
 -- See also the definition of `Replicate`.
 data Unfoldr :: (b -> Exp (Maybe (a, b))) -> b -> Exp [a]
@@ -246,8 +250,8 @@ type instance Eval (NumIter a s) =
 -- === __Example__
 --
 -- >>> :kind! Eval (Replicate 4 '("ok", 2))
--- Eval (Replicate 4 '("ok", 2)) :: [(TL.Symbol, Nat)]
--- = '[ '("ok", 2), '("ok", 2), '("ok", 2), '("ok", 2)]
+-- Eval (Replicate 4 '("ok", 2)) :: [(TL.Symbol, Natural)]
+-- = ['("ok", 2), '("ok", 2), '("ok", 2), '("ok", 2)]
 data Replicate :: Nat -> a -> Exp [a]
 type instance Eval (Replicate n a) = Eval (Unfoldr (NumIter a) n)
 
@@ -256,9 +260,9 @@ type instance Eval (Replicate n a) = Eval (Unfoldr (NumIter a) n)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Take 2 '[1,2,3,4,5])
--- Eval (Take 2 '[1,2,3,4,5]) :: [Nat]
--- = '[1, 2]
+-- >>> :kind! Eval (Take 2 [1,2,3,4,5])
+-- Eval (Take 2 [1,2,3,4,5]) :: [Natural]
+-- = [1, 2]
 data Take :: Nat -> [a] -> Exp [a]
 type instance Eval (Take n as) = Take_ n as
 
@@ -271,9 +275,9 @@ type family Take_ (n :: Nat) (xs :: [a]) :: [a] where
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Drop 2 '[1,2,3,4,5])
--- Eval (Drop 2 '[1,2,3,4,5]) :: [Nat]
--- = '[3, 4, 5]
+-- >>> :kind! Eval (Drop 2 [1,2,3,4,5])
+-- Eval (Drop 2 [1,2,3,4,5]) :: [Natural]
+-- = [3, 4, 5]
 data Drop :: Nat -> [a] -> Exp [a]
 type instance Eval (Drop n as) = Drop_ n as
 
@@ -286,9 +290,9 @@ type family Drop_ (n :: Nat) (xs :: [a]) :: [a] where
 --
 -- === __Example__
 --
--- >>> :kind! Eval (TakeWhile ((>=) 3) '[1, 2, 3, 4, 5])
--- Eval (TakeWhile ((>=) 3) '[1, 2, 3, 4, 5]) :: [Nat]
--- = '[1, 2, 3]
+-- >>> :kind! Eval (TakeWhile ((>=) 3) [1, 2, 3, 4, 5])
+-- Eval (TakeWhile ((>=) 3) [1, 2, 3, 4, 5]) :: [Natural]
+-- = [1, 2, 3]
 data TakeWhile :: (a -> Exp Bool) -> [a] -> Exp [a]
 type instance Eval (TakeWhile p '[]) = '[]
 type instance Eval (TakeWhile p (x ': xs)) =
@@ -301,9 +305,9 @@ type instance Eval (TakeWhile p (x ': xs)) =
 --
 -- === __Example__
 --
--- :kind! Eval (DropWhile ((>=) 3) '[1, 2, 3, 4, 5])
--- Eval (DropWhile ((>=) 3) '[1, 2, 3, 4, 5]) :: [Nat]
--- = '[4, 5]
+-- :kind! Eval (DropWhile ((>=) 3) [1, 2, 3, 4, 5])
+-- Eval (DropWhile ((>=) 3) [1, 2, 3, 4, 5]) :: [Natural]
+-- = [4, 5]
 data DropWhile :: (a -> Exp Bool) -> [a] -> Exp [a]
 type instance Eval (DropWhile p '[]) = '[]
 type instance Eval (DropWhile p (x ': xs)) =
@@ -321,17 +325,17 @@ type instance Eval (DropWhile p (x ': xs)) =
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Span (Flip (<) 3) '[1,2,3,4,1,2,3,4])
--- Eval (Span (Flip (<) 3) '[1,2,3,4,1,2,3,4]) :: ([Nat], [Nat])
--- = '( '[1, 2], '[3, 4, 1, 2, 3, 4])
+-- >>> :kind! Eval (Span (Flip (<) 3) [1,2,3,4,1,2])
+-- Eval (Span (Flip (<) 3) [1,2,3,4,1,2]) :: ([Natural], [Natural])
+-- = '([1, 2], [3, 4, 1, 2])
 --
--- >>> :kind! Eval (Span (Flip (<) 9) '[1,2,3])
--- Eval (Span (Flip (<) 9) '[1,2,3]) :: ([Nat], [Nat])
--- = '( '[1, 2, 3], '[])
+-- >>> :kind! Eval (Span (Flip (<) 9) [1,2,3])
+-- Eval (Span (Flip (<) 9) [1,2,3]) :: ([Natural], [Natural])
+-- = '([1, 2, 3], '[])
 --
--- >>> :kind! Eval (Span (Flip (<) 0) '[1,2,3])
--- Eval (Span (Flip (<) 0) '[1,2,3]) :: ([Nat], [Nat])
--- = '( '[], '[1, 2, 3])
+-- >>> :kind! Eval (Span (Flip (<) 0) [1,2,3])
+-- Eval (Span (Flip (<) 0) [1,2,3]) :: ([Natural], [Natural])
+-- = '( '[], [1, 2, 3])
 data Span :: (a -> Exp Bool) -> [a] -> Exp ([a],[a])
 type instance Eval (Span p lst) = '( Eval (TakeWhile p lst), Eval (DropWhile p lst))
 
@@ -342,17 +346,17 @@ type instance Eval (Span p lst) = '( Eval (TakeWhile p lst), Eval (DropWhile p l
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Break (Flip (>) 3) '[1,2,3,4,1,2,3,4])
--- Eval (Break (Flip (>) 3) '[1,2,3,4,1,2,3,4]) :: ([Nat], [Nat])
--- = '( '[1, 2, 3], '[4, 1, 2, 3, 4])
+-- >>> :kind! Eval (Break (Flip (>) 3) [1,2,3,4,1,2])
+-- Eval (Break (Flip (>) 3) [1,2,3,4,1,2]) :: ([Natural], [Natural])
+-- = '([1, 2, 3], [4, 1, 2])
 --
--- >>> :kind! Eval (Break (Flip (<) 9) '[1,2,3])
--- Eval (Break (Flip (<) 9) '[1,2,3]) :: ([Nat], [Nat])
--- = '( '[], '[1, 2, 3])
+-- >>> :kind! Eval (Break (Flip (<) 9) [1,2,3])
+-- Eval (Break (Flip (<) 9) [1,2,3]) :: ([Natural], [Natural])
+-- = '( '[], [1, 2, 3])
 --
--- >>> :kind! Eval (Break (Flip (>) 9) '[1,2,3])
--- Eval (Break (Flip (>) 9) '[1,2,3]) :: ([Nat], [Nat])
--- = '( '[1, 2, 3], '[])
+-- >>> :kind! Eval (Break (Flip (>) 9) [1,2,3])
+-- Eval (Break (Flip (>) 9) [1,2,3]) :: ([Natural], [Natural])
+-- = '([1, 2, 3], '[])
 data Break :: (a -> Exp Bool) -> [a] -> Exp ([a],[a])
 type instance Eval (Break p lst) = Eval (Span (Not <=< p) lst)
 
@@ -361,9 +365,9 @@ type instance Eval (Break p lst) = Eval (Span (Not <=< p) lst)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Tails '[0,1,2,3])
--- Eval (Tails '[0,1,2,3]) :: [[Nat]]
--- = '[ '[0, 1, 2, 3], '[1, 2, 3], '[2, 3], '[3]]
+-- >>> :kind! Eval (Tails [0,1,2,3])
+-- Eval (Tails [0,1,2,3]) :: [[Natural]]
+-- = [[0, 1, 2, 3], [1, 2, 3], [2, 3], '[3]]
 data Tails :: [a] -> Exp [[a]]
 type instance Eval (Tails '[]) = '[]
 type instance Eval (Tails (a ': as)) = (a ': as) ': Eval (Tails as)
@@ -373,21 +377,21 @@ type instance Eval (Tails (a ': as)) = (a ': as) ': Eval (Tails as)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (IsPrefixOf '[0,1,2] '[0,1,2,3,4,5])
--- Eval (IsPrefixOf '[0,1,2] '[0,1,2,3,4,5]) :: Bool
--- = 'True
+-- >>> :kind! Eval ([0,1,2] `IsPrefixOf` [0,1,2,3,4,5])
+-- Eval ([0,1,2] `IsPrefixOf` [0,1,2,3,4,5]) :: Bool
+-- = True
 --
--- >>> :kind! Eval (IsPrefixOf '[0,1,2] '[0,1,3,2,4,5])
--- Eval (IsPrefixOf '[0,1,2] '[0,1,3,2,4,5]) :: Bool
--- = 'False
+-- >>> :kind! Eval ([0,1,2] `IsPrefixOf` [0,1,3,2,4,5])
+-- Eval ([0,1,2] `IsPrefixOf` [0,1,3,2,4,5]) :: Bool
+-- = False
 --
--- >>> :kind! Eval (IsPrefixOf '[] '[0,1,3,2,4,5])
--- Eval (IsPrefixOf '[] '[0,1,3,2,4,5]) :: Bool
--- = 'True
+-- >>> :kind! Eval ('[] `IsPrefixOf` [0,1,3,2,4,5])
+-- Eval ('[] `IsPrefixOf` [0,1,3,2,4,5]) :: Bool
+-- = True
 --
--- >>> :kind! Eval (IsPrefixOf '[0,1,3,2,4,5] '[])
--- Eval (IsPrefixOf '[0,1,3,2,4,5] '[]) :: Bool
--- = 'False
+-- >>> :kind! Eval ([0,1,3,2,4,5] `IsPrefixOf` '[])
+-- Eval ([0,1,3,2,4,5] `IsPrefixOf` '[]) :: Bool
+-- = False
 data IsPrefixOf :: [a] -> [a] -> Exp Bool
 type instance Eval (IsPrefixOf xs ys) = IsPrefixOf_ xs ys
 
@@ -403,21 +407,21 @@ type family IsPrefixOf_ (xs :: [a]) (ys :: [a]) :: Bool where
 --
 -- === __Example__
 --
--- >>> :kind! Eval (IsSuffixOf '[3,4,5] '[0,1,2,3,4,5])
--- Eval (IsSuffixOf '[3,4,5] '[0,1,2,3,4,5]) :: Bool
--- = 'True
+-- >>> :kind! Eval (IsSuffixOf [3,4,5] [0,1,2,3,4,5])
+-- Eval (IsSuffixOf [3,4,5] [0,1,2,3,4,5]) :: Bool
+-- = True
 --
--- >>> :kind! Eval (IsSuffixOf '[3,4,5] '[0,1,3,2,4,5])
--- Eval (IsSuffixOf '[3,4,5] '[0,1,3,2,4,5]) :: Bool
--- = 'False
+-- >>> :kind! Eval (IsSuffixOf [3,4,5] [0,1,3,2,4,5])
+-- Eval (IsSuffixOf [3,4,5] [0,1,3,2,4,5]) :: Bool
+-- = False
 --
--- >>> :kind! Eval (IsSuffixOf '[] '[0,1,3,2,4,5])
--- Eval (IsSuffixOf '[] '[0,1,3,2,4,5]) :: Bool
--- = 'True
+-- >>> :kind! Eval (IsSuffixOf '[] [0,1,3,2,4,5])
+-- Eval (IsSuffixOf '[] [0,1,3,2,4,5]) :: Bool
+-- = True
 --
--- >>> :kind! Eval (IsSuffixOf '[0,1,3,2,4,5] '[])
--- Eval (IsSuffixOf '[0,1,3,2,4,5] '[]) :: Bool
--- = 'False
+-- >>> :kind! Eval (IsSuffixOf [0,1,3,2,4,5] '[])
+-- Eval (IsSuffixOf [0,1,3,2,4,5] '[]) :: Bool
+-- = False
 data IsSuffixOf :: [a] -> [a] -> Exp Bool
 type instance Eval (IsSuffixOf xs ys) =
   Eval (IsPrefixOf (Reverse @@ xs) (Reverse @@ ys))
@@ -427,13 +431,13 @@ type instance Eval (IsSuffixOf xs ys) =
 --
 -- === __Example__
 --
--- >>> :kind! Eval (IsInfixOf '[2,3,4] '[0,1,2,3,4,5,6])
--- Eval (IsInfixOf '[2,3,4] '[0,1,2,3,4,5,6]) :: Bool
--- = 'True
+-- >>> :kind! Eval (IsInfixOf [2,3,4] [0,1,2,3,4,5,6])
+-- Eval (IsInfixOf [2,3,4] [0,1,2,3,4,5,6]) :: Bool
+-- = True
 --
--- >>> :kind! Eval (IsInfixOf '[2,4,4] '[0,1,2,3,4,5,6])
--- Eval (IsInfixOf '[2,4,4] '[0,1,2,3,4,5,6]) :: Bool
--- = 'False
+-- >>> :kind! Eval (IsInfixOf [2,4,4] [0,1,2,3,4,5,6])
+-- Eval (IsInfixOf [2,4,4] [0,1,2,3,4,5,6]) :: Bool
+-- = False
 data IsInfixOf :: [a] -> [a] -> Exp Bool
 type instance Eval (IsInfixOf xs ys) = Eval (Any (IsPrefixOf xs) =<< Tails ys)
 
@@ -444,12 +448,12 @@ type instance Eval (IsInfixOf xs ys) = Eval (Any (IsPrefixOf xs) =<< Tails ys)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Elem 1 '[1,2,3])
--- Eval (Elem 1 '[1,2,3]) :: Bool
--- = 'True
--- >>> :kind! Eval (Elem 1 '[2,3])
--- Eval (Elem 1 '[2,3]) :: Bool
--- = 'False
+-- >>> :kind! Eval (Elem 1 [1,2,3])
+-- Eval (Elem 1 [1,2,3]) :: Bool
+-- = True
+-- >>> :kind! Eval (Elem 1 [2,3])
+-- Eval (Elem 1 [2,3]) :: Bool
+-- = False
 --
 data Elem :: a -> [a] -> Exp Bool
 type instance Eval (Elem a as) = Eval (IsJust =<< FindIndex (TyEq a) as)
@@ -465,13 +469,13 @@ type instance Eval (Lookup (a :: k) (as :: [(k, b)])) =
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Find (TyEq 0) '[1,2,3])
--- Eval (Find (TyEq 0) '[1,2,3]) :: Maybe Nat
--- = 'Nothing
+-- >>> :kind! Eval (Find (TyEq 0) [1,2,3])
+-- Eval (Find (TyEq 0) [1,2,3]) :: Maybe Natural
+-- = Nothing
 --
--- >>> :kind! Eval (Find (TyEq 0) '[1,2,3,0])
--- Eval (Find (TyEq 0) '[1,2,3,0]) :: Maybe Nat
--- = 'Just 0
+-- >>> :kind! Eval (Find (TyEq 0) [1,2,3,0])
+-- Eval (Find (TyEq 0) [1,2,3,0]) :: Maybe Natural
+-- = Just 0
 data Find :: (a -> Exp Bool) -> [a] -> Exp (Maybe a)
 type instance Eval (Find _p '[]) = 'Nothing
 type instance Eval (Find p (a ': as)) =
@@ -484,9 +488,9 @@ type instance Eval (Find p (a ': as)) =
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Filter ((>) 3) '[1,2,3,0])
--- Eval (Filter ((>) 3) '[1,2,3,0]) :: [Nat]
--- = '[1, 2, 0]
+-- >>> :kind! Eval (Filter ((>) 3) [1,2,3,0])
+-- Eval (Filter ((>) 3) [1,2,3,0]) :: [Natural]
+-- = [1, 2, 0]
 data Filter :: (a -> Exp Bool) -> [a] -> Exp [a]
 type instance Eval (Filter _p '[]) = '[]
 type instance Eval (Filter p (a ': as)) =
@@ -500,9 +504,10 @@ type instance Eval (Filter p (a ': as)) =
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Partition ((>=) 35) '[ 20, 30, 40, 50])
--- Eval (Partition ((>=) 35) '[ 20, 30, 40, 50]) :: ([Nat], [Nat])
--- = '( '[20, 30], '[40, 50])
+-- >>> :kind! Eval (Partition ((>=) 35) [20, 30, 40, 50])
+-- Eval (Partition ((>=) 35) [20, 30, 40, 50]) :: ([Natural],
+--                                                 [Natural])
+-- = '([20, 30], [40, 50])
 data Partition :: (a -> Exp Bool) -> [a] -> Exp ([a], [a])
 type instance Eval (Partition p lst) = Eval (Foldr (PartHelp p) '( '[], '[]) lst)
 
@@ -518,13 +523,13 @@ type instance Eval (PartHelp p a '(xs,ys)) =
 --
 -- === __Example__
 --
--- >>> :kind! Eval (FindIndex ((<=) 3) '[1,2,3,1,2,3])
--- Eval (FindIndex ((<=) 3) '[1,2,3,1,2,3]) :: Maybe Nat
--- = 'Just 2
+-- >>> :kind! Eval (FindIndex ((<=) 3) [1,2,3,1,2,3])
+-- Eval (FindIndex ((<=) 3) [1,2,3,1,2,3]) :: Maybe Natural
+-- = Just 2
 --
--- >>> :kind! Eval (FindIndex ((>) 0) '[1,2,3,1,2,3])
--- Eval (FindIndex ((>) 0) '[1,2,3,1,2,3]) :: Maybe Nat
--- = 'Nothing
+-- >>> :kind! Eval (FindIndex ((>) 0) [1,2,3,1,2,3])
+-- Eval (FindIndex ((>) 0) [1,2,3,1,2,3]) :: Maybe Natural
+-- = Nothing
 data FindIndex :: (a -> Exp Bool) -> [a] -> Exp (Maybe Nat)
 type instance Eval (FindIndex _p '[]) = 'Nothing
 type instance Eval (FindIndex p (a ': as)) =
@@ -539,9 +544,9 @@ type instance Eval (FindIndex p (a ': as)) =
 --
 -- === __Example__
 --
--- >>> :kind! Eval (SetIndex 2 7 '[1,2,3])
--- Eval (SetIndex 2 7 '[1,2,3]) :: [Nat]
--- = '[1, 2, 7]
+-- >>> :kind! Eval (SetIndex 2 7 [1,2,3])
+-- Eval (SetIndex 2 7 [1,2,3]) :: [Natural]
+-- = [1, 2, 7]
 data SetIndex :: Nat -> a -> [a] -> Exp [a]
 type instance Eval (SetIndex n a' as) = SetIndexImpl n a' as
 
@@ -554,9 +559,9 @@ type family SetIndexImpl (n :: Nat) (a' :: k) (as :: [k]) where
 --
 -- === __Example__
 --
--- >>> :kind! Eval (ZipWith (+) '[1,2,3] '[1,1,1])
--- Eval (ZipWith (+) '[1,2,3] '[1,1,1]) :: [Nat]
--- = '[2, 3, 4]
+-- >>> :kind! Eval (ZipWith (+) [1,2,3] [1,1,1])
+-- Eval (ZipWith (+) [1,2,3] [1,1,1]) :: [Natural]
+-- = [2, 3, 4]
 data ZipWith :: (a -> b -> Exp c) -> [a] -> [b] -> Exp [c]
 type instance Eval (ZipWith _f '[] _bs) = '[]
 type instance Eval (ZipWith _f _as '[]) = '[]

@@ -55,8 +55,12 @@ import Fcf.Data.Bool (type (&&), type (||))
 import Fcf.Data.Nat (Nat, type (+))
 
 -- $setup
--- >>> import Fcf.Combinators (Flip)
+-- >>> import Fcf.Core (Eval)
+-- >>> import Fcf.Combinators (Flip, Pure)
 -- >>> import Fcf.Class.Ord (type (<))
+-- >>> import Fcf.Class.Monoid (type (.<>))
+-- >>> import Fcf.Data.Nat (type (+))
+-- >>> import Numeric.Natural
 
 -- | Type-level 'Data.Foldable.foldMap'.
 data FoldMap :: (a -> Exp m) -> t a -> Exp m
@@ -86,9 +90,9 @@ type instance Eval (FoldMap f ('Right x)) = Eval (f x)
 --
 -- ==== __Example__
 --
--- >>> :kind! FoldMapDefault_ Pure '[ 'EQ, 'LT, 'GT ]
--- FoldMapDefault_ Pure '[ 'EQ, 'LT, 'GT ] :: Ordering
--- = 'LT
+-- >>> :kind! FoldMapDefault_ Pure [EQ, LT, GT]
+-- FoldMapDefault_ Pure [EQ, LT, GT] :: Ordering
+-- = LT
 type FoldMapDefault_ f xs = Eval (Foldr (Bicomap f Pure (.<>)) MEmpty xs)
 
 -- | Default implementation of 'Foldr'.
@@ -104,17 +108,17 @@ type FoldMapDefault_ f xs = Eval (Foldr (Bicomap f Pure (.<>)) MEmpty xs)
 --
 -- ==== __Example__
 --
--- >>> :kind! FoldrDefault_ (.<>) 'EQ '[ 'EQ, 'LT, 'GT ]
--- FoldrDefault_ (.<>) 'EQ '[ 'EQ, 'LT, 'GT ] :: Ordering
--- = 'LT
+-- >>> :kind! FoldrDefault_ (.<>) EQ [EQ, LT, GT]
+-- FoldrDefault_ (.<>) EQ [EQ, LT, GT] :: Ordering
+-- = LT
 type FoldrDefault_ f y xs = Eval (UnEndo (Eval (FoldMap (Pure1 'Endo <=< Pure1 f) xs)) y)
 
 -- | Right fold.
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Foldr (+) 0 '[1, 2, 3, 4])
--- Eval (Foldr (+) 0 '[1, 2, 3, 4]) :: Nat
+-- >>> :kind! Eval (Foldr (+) 0 [1, 2, 3, 4])
+-- Eval (Foldr (+) 0 [1, 2, 3, 4]) :: Natural
 -- = 10
 data Foldr :: (a -> b -> Exp b) -> b -> t a -> Exp b
 
@@ -136,13 +140,13 @@ type instance Eval (Foldr f y ('Right x)) = Eval (f x y)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (And '[ 'True, 'True])
--- Eval (And '[ 'True, 'True]) :: Bool
--- = 'True
+-- >>> :kind! Eval (And [True, True])
+-- Eval (And [True, True]) :: Bool
+-- = True
 --
--- >>> :kind! Eval (And '[ 'True, 'True, 'False])
--- Eval (And '[ 'True, 'True, 'False]) :: Bool
--- = 'False
+-- >>> :kind! Eval (And [True, True, False])
+-- Eval (And [True, True, False]) :: Bool
+-- = False
 data And :: t Bool -> Exp Bool
 type instance Eval (And lst) = Eval (Foldr (&&) 'True lst)
 
@@ -152,13 +156,13 @@ type instance Eval (And lst) = Eval (Foldr (&&) 'True lst)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (All (Flip (<) 6) '[0,1,2,3,4,5])
--- Eval (All (Flip (<) 6) '[0,1,2,3,4,5]) :: Bool
--- = 'True
+-- >>> :kind! Eval (All (Flip (<) 6) [0,1,2,3,4,5])
+-- Eval (All (Flip (<) 6) [0,1,2,3,4,5]) :: Bool
+-- = True
 --
--- >>> :kind! Eval (All (Flip (<) 5) '[0,1,2,3,4,5])
--- Eval (All (Flip (<) 5) '[0,1,2,3,4,5]) :: Bool
--- = 'False
+-- >>> :kind! Eval (All (Flip (<) 5) [0,1,2,3,4,5])
+-- Eval (All (Flip (<) 5) [0,1,2,3,4,5]) :: Bool
+-- = False
 data All :: (a -> Exp Bool) -> t a -> Exp Bool
 type instance Eval (All p lst) = Eval (Foldr (Bicomap p Pure (&&)) 'True lst)
 
@@ -167,13 +171,13 @@ type instance Eval (All p lst) = Eval (Foldr (Bicomap p Pure (&&)) 'True lst)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Or '[ 'True, 'True])
--- Eval (Or '[ 'True, 'True]) :: Bool
--- = 'True
+-- >>> :kind! Eval (Or [True, True])
+-- Eval (Or [True, True]) :: Bool
+-- = True
 --
--- >>> :kind! Eval (Or '[ 'False, 'False])
--- Eval (Or '[ 'False, 'False]) :: Bool
--- = 'False
+-- >>> :kind! Eval (Or [False, False])
+-- Eval (Or [False, False]) :: Bool
+-- = False
 data Or :: t Bool -> Exp Bool
 type instance Eval (Or lst) = Eval (Foldr (||) 'False lst)
 
@@ -185,13 +189,13 @@ type instance Eval (Or lst) = Eval (Foldr (||) 'False lst)
 --
 -- === __Example__
 --
--- >>> :kind! Eval (Any (Flip (<) 5) '[0,1,2,3,4,5])
--- Eval (Any (Flip (<) 5) '[0,1,2,3,4,5]) :: Bool
--- = 'True
+-- >>> :kind! Eval (Any (Flip (<) 5) [0,1,2,3,4,5])
+-- Eval (Any (Flip (<) 5) [0,1,2,3,4,5]) :: Bool
+-- = True
 --
--- >>> :kind! Eval (Any (Flip (<) 0) '[0,1,2,3,4,5])
--- Eval (Any (Flip (<) 0) '[0,1,2,3,4,5]) :: Bool
--- = 'False
+-- >>> :kind! Eval (Any (Flip (<) 0) [0,1,2,3,4,5])
+-- Eval (Any (Flip (<) 0) [0,1,2,3,4,5]) :: Bool
+-- = False
 data Any :: (a -> Exp Bool) -> t a -> Exp Bool
 type instance Eval (Any p lst) = Eval (Foldr (Bicomap p Pure (||)) 'False lst)
 
@@ -201,7 +205,7 @@ type instance Eval (Any p lst) = Eval (Foldr (Bicomap p Pure (||)) 'False lst)
 -- === __Example__
 --
 -- >>> :kind! Eval (Sum '[1,2,3])
--- Eval (Sum '[1,2,3]) :: Nat
+-- Eval (Sum '[1,2,3]) :: Natural
 -- = 6
 data Sum :: t Nat -> Exp Nat
 type instance Eval (Sum ns) = Eval (Foldr (+) 0 ns)
@@ -215,12 +219,12 @@ type instance Eval (Sum ns) = Eval (Foldr (+) 0 ns)
 --
 -- > Concat :: [[a]] -> Exp [a]
 --
--- >>> :kind! Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]]))
--- Eval (Concat ( '[ '[1,2], '[3,4], '[5,6]])) :: [Nat]
--- = '[1, 2, 3, 4, 5, 6]
--- >>> :kind! Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]]))
--- Eval (Concat ( '[ '[Int, Maybe Int], '[Maybe String, Either Double Int]])) :: [*]
--- = '[Int, Maybe Int, Maybe String, Either Double Int]
+-- >>> :kind! Eval (Concat ([[1,2], [3,4], [5,6]]))
+-- Eval (Concat ([[1,2], [3,4], [5,6]])) :: [Natural]
+-- = [1, 2, 3, 4, 5, 6]
+-- >>> :kind! Eval (Concat ([[Int, Maybe Int], [Maybe String, Either Double Int]]))
+-- Eval (Concat ([[Int, Maybe Int], [Maybe String, Either Double Int]])) :: [*]
+-- = [Int, Maybe Int, Maybe [Char], Either Double Int]
 --
 data Concat :: t m -> Exp m
 type instance Eval (Concat xs) = Eval (FoldMap Pure xs)
