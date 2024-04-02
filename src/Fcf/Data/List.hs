@@ -224,7 +224,7 @@ type instance Eval (UnfoldrCase _ 'Nothing) = '[]
 -- >>> data ToThree :: Nat -> Exp (Maybe (Nat, Nat))
 -- >>> :{
 -- type instance Eval (ToThree b) =
---   If (Eval (b Fcf.>= 4))
+--   If (4 TL.<=? b)
 --     Nothing
 --     (Just '(b, b TL.+ 1))
 -- :}
