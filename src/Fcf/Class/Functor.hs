@@ -13,7 +13,7 @@ module Fcf.Class.Functor
 import Fcf.Core (Exp, Eval)
 
 -- $setup
--- >>> :set -XUndecidableInstances -XTypeInType -XGADTs
+-- >>> :set -XUndecidableInstances -XDataKinds -XPolyKinds -XGADTs
 -- >>> import Fcf.Core (Eval, Exp)
 -- >>> import Fcf.Data.Nat
 -- >>> import qualified GHC.TypeLits as TL
