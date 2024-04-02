@@ -11,7 +11,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Li-yao Xia
 maintainer:          lysxia@gmail.com
-copyright:           2018-2021 Li-yao Xia
+copyright:           2018-2024 Li-yao Xia
 category:            Other
 build-type:          Simple
 extra-source-files:  README.md, CHANGELOG.md
