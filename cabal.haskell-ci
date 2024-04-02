@@ -1,2 +1,3 @@
+docspec: >= 9.6
 distribution: focal
 ghcup-jobs: True
