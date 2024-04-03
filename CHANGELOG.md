@@ -1,3 +1,8 @@
+# 0.8.1.0
+
+- Add `(Fcf.Combinators.>>=)`
+- Resolve warnings about deprecated `TypeInType`
+
 # 0.8.0.1
 
 - Bump upper bounds for GHC 9.0
@@ -33,7 +38,7 @@
 
 # 0.6.0.0
 
-- Add `Fcf.Utils.Case` and `(Fcf.Combinators.>>=)` (thanks to TheMatten)
+- Add `Fcf.Utils.Case` (thanks to TheMatten)
 - Deprecate `Fcf.Bool.Guarded`
 - GHC 8.8 compatibility
 
