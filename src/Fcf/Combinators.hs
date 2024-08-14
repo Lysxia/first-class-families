@@ -13,6 +13,12 @@ module Fcf.Combinators
   , Pure1
   , Pure2
   , Pure3
+  , Pure4
+  , Pure5
+  , Pure6
+  , Pure7
+  , Pure8
+  , Pure9
   , type (=<<)
   , type (>>=)
   , type (<=<)
@@ -46,6 +52,24 @@ type instance Eval (Pure2 f x y) = f x y
 
 data Pure3 :: (a -> b -> c -> d) -> a -> b -> c -> Exp d
 type instance Eval (Pure3 f x y z) = f x y z
+
+data Pure4 :: (a -> b -> c -> d -> e) -> a -> b -> c -> d -> Exp e
+type instance Eval (Pure4 f w x y z) = f w x y z
+
+data Pure5 :: (a -> b -> c -> d -> e -> f) -> a -> b -> c -> d -> e -> Exp f
+type instance Eval (Pure5 f v w x y z) = f v w x y z
+
+data Pure6 :: (a -> b -> c -> d -> e -> f -> g) -> a -> b -> c -> d -> e -> f -> Exp g
+type instance Eval (Pure6 f u v w x y z) = f u v w x y z
+
+data Pure7 :: (a -> b -> c -> d -> e -> f -> g -> h) -> a -> b -> c -> d -> e -> f -> g -> Exp h
+type instance Eval (Pure7 f t u v w x y z) = f t u v w x y z
+
+data Pure8 :: (a -> b -> c -> d -> e -> f -> g -> h -> i) -> a -> b -> c -> d -> e -> f -> g -> h -> Exp i
+type instance Eval (Pure8 f s t u v w x y z) = f s t u v w x y z
+
+data Pure9 :: (a -> b -> c -> d -> e -> f -> g -> h -> i -> j) -> a -> b -> c -> d -> e -> f -> g -> h -> i -> Exp j
+type instance Eval (Pure9 f r s t u v w x y z) = f r s t u v w x y z
 
 data (=<<) :: (a -> Exp b) -> Exp a -> Exp b
 type instance Eval (k =<< e) = Eval (k (Eval e))
