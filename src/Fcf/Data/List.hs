@@ -40,6 +40,7 @@ module Fcf.Data.List
   -- * Sublists
   , Take
   , Drop
+  , SplitAt
   , TakeWhile
   , DropWhile
   , Span
@@ -285,6 +286,17 @@ type family Drop_ (n :: Nat) (xs :: [a]) :: [a] where
   Drop_ 0 xs        = xs
   Drop_ _ '[]       = '[]
   Drop_ n (x ': xs) = Drop_ (n TL.- 1) xs
+
+-- | Return a tuple where first element is @xs@ prefix of length @n@
+-- and second element is the remainder of the list.
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (SplitAt 3 '[1,2,3,4,5])
+-- Eval (SplitAt 3 [1,2,3,4,5]) :: ([Natural], [Natural])
+-- = ([1, 2, 3], [4, 5])
+data SplitAt :: Nat -> [a] -> Exp ([a], [a])
+type instance Eval (SplitAt n xs) = '(Eval (Take n xs), Eval (Drop n xs))
 
 -- | Take the longest prefix of elements satisfying a predicate.
 --
