@@ -293,8 +293,8 @@ type family Drop_ (n :: Nat) (xs :: [a]) :: [a] where
 -- === __Example__
 --
 -- >>> :kind! Eval (SplitAt 3 '[1,2,3,4,5])
--- Eval (SplitAt 3 [1,2,3,4,5]) :: ([Natural], [Natural])
--- = ([1, 2, 3], [4, 5])
+-- Eval (SplitAt 3 '[1,2,3,4,5]) :: ([Natural], [Natural])
+-- = '([1, 2, 3], [4, 5])
 data SplitAt :: Nat -> [a] -> Exp ([a], [a])
 type instance Eval (SplitAt n xs) = '(Eval (Take n xs), Eval (Drop n xs))
 
