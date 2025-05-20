@@ -18,6 +18,9 @@ module Fcf.Data.List
   , Snoc
   , Cons2
   , Init
+  , Uncons
+  , Unsnoc
+  , Singleton
   , Null
   , Length
 
@@ -121,6 +124,21 @@ type instance Eval (Init '[]) = 'Nothing
 type instance Eval (Init (a ': '[])) = 'Just '[]
 type instance Eval (Init (a ': b ': as)) =
   Eval (Map (Cons a) =<< (Init (b ': as)))
+
+data Uncons :: [a] -> Exp (Maybe (a, [a]))
+type instance Eval (Uncons '[]) = 'Nothing
+type instance Eval (Uncons (a ': xs)) = 'Just '(a, xs)
+
+data Unsnoc :: [a] -> Exp (Maybe ([a], a))
+type instance Eval (Unsnoc xs) =
+  Eval (Map ReverseTailSwap =<< Uncons =<< Reverse xs)
+
+-- Helper for the Unsnoc.
+data ReverseTailSwap :: (a, [a]) -> Exp ([a], a)
+type instance Eval (ReverseTailSwap '(hd, tl)) = '(Eval (Reverse tl), hd)
+
+data Singleton :: a -> Exp [a]
+type instance Eval (Singleton x) = '[x]
 
 data Tail :: [a] -> Exp (Maybe [a])
 type instance Eval (Tail '[]) = 'Nothing
