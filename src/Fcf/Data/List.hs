@@ -85,7 +85,7 @@ import Fcf.Data.Nat
 import Fcf.Utils (If, TyEq)
 
 -- $setup
--- >>> :set -XGADTs -XUndecidableInstances
+-- >>> :set -XGADTs -XUndecidableInstances -XDataKinds
 -- >>> import Fcf.Core (Exp, Eval)
 -- >>> import Fcf.Combinators
 -- >>> import Fcf.Class.Foldable (Concat)
