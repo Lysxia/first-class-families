@@ -129,6 +129,21 @@ data Uncons :: [a] -> Exp (Maybe (a, [a]))
 type instance Eval (Uncons '[]) = 'Nothing
 type instance Eval (Uncons (a ': xs)) = 'Just '(a, xs)
 
+-- | Decompose a list into 'init' and 'last'
+--
+-- === __Example__
+--
+-- >>> kind! Eval (Unsnoc '[])
+-- Eval (Unsnoc '[]) :: Maybe ([a], a)
+-- = 'Nothing
+--
+-- >>> :kind! Eval (Unsnoc '[1])
+-- Eval (Unsnoc '[1]) :: Maybe ([Natural], Natural)
+-- = 'Just '( '[], 1)
+--
+-- >>> :kind! Eval (Uncons '[1,2,3])
+-- Eval (Unsnoc '[1,2,3]) :: Maybe ([Natural], Natural)
+-- = 'Just '( '[1, 2], 3)
 data Unsnoc :: [a] -> Exp (Maybe ([a], a))
 type instance Eval (Unsnoc xs) =
   Eval (Map ReverseTailSwap =<< Uncons =<< Reverse xs)
