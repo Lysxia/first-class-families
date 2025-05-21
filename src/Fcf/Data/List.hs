@@ -135,22 +135,22 @@ type instance Eval (Uncons (a ': xs)) = 'Just '(a, xs)
 --
 -- >>> :kind! Eval (Unsnoc '[])
 -- Eval (Unsnoc '[]) :: Maybe ([a], a)
--- = 'Nothing
+-- = Nothing
 --
 -- >>> :kind! Eval (Unsnoc '[1])
 -- Eval (Unsnoc '[1]) :: Maybe ([Natural], Natural)
--- = 'Just '( '[], 1)
+-- = Just '( '[], 1)
 --
 -- >>> :kind! Eval (Unsnoc '[1,2,3])
 -- Eval (Unsnoc '[1,2,3]) :: Maybe ([Natural], Natural)
--- = 'Just '( '[1, 2], 3)
+-- = Just '([1, 2], 3)
 data Unsnoc :: [a] -> Exp (Maybe ([a], a))
-type instance Eval (Unsnoc xs) =
-  Eval (Map ReverseTailSwap =<< Uncons =<< Reverse xs)
+type instance Eval (Unsnoc '[]) = 'Nothing
+type instance Eval (Unsnoc (x ': '[])) = 'Just '( '[], x)
+type instance Eval (Unsnoc (x ': y ': ys)) = Eval (Map (PrependF x) =<< Unsnoc (y ': ys))
 
--- Helper for the Unsnoc.
-data ReverseTailSwap :: (a, [a]) -> Exp ([a], a)
-type instance Eval (ReverseTailSwap '(hd, tl)) = '(Eval (Reverse tl), hd)
+data PrependF :: a -> ([a], a) -> Exp ([a], a)
+type instance Eval (PrependF x '(xs, y)) = '(x ': xs, y)
 
 data Singleton :: a -> Exp [a]
 type instance Eval (Singleton x) = '[x]
