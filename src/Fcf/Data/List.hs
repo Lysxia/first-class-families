@@ -133,7 +133,7 @@ type instance Eval (Uncons (a ': xs)) = 'Just '(a, xs)
 --
 -- === __Example__
 --
--- >>> kind! Eval (Unsnoc '[])
+-- >>> :kind! Eval (Unsnoc '[])
 -- Eval (Unsnoc '[]) :: Maybe ([a], a)
 -- = 'Nothing
 --
