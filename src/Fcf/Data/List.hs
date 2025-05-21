@@ -141,7 +141,7 @@ type instance Eval (Uncons (a ': xs)) = 'Just '(a, xs)
 -- Eval (Unsnoc '[1]) :: Maybe ([Natural], Natural)
 -- = 'Just '( '[], 1)
 --
--- >>> :kind! Eval (Uncons '[1,2,3])
+-- >>> :kind! Eval (Unsnoc '[1,2,3])
 -- Eval (Unsnoc '[1,2,3]) :: Maybe ([Natural], Natural)
 -- = 'Just '( '[1, 2], 3)
 data Unsnoc :: [a] -> Exp (Maybe ([a], a))
