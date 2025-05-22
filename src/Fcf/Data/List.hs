@@ -18,6 +18,9 @@ module Fcf.Data.List
   , Snoc
   , Cons2
   , Init
+  , Uncons
+  , Unsnoc
+  , Singleton
   , Null
   , Length
 
@@ -82,10 +85,11 @@ import Fcf.Data.Nat
 import Fcf.Utils (If, TyEq)
 
 -- $setup
--- >>> :set -XGADTs -XUndecidableInstances
+-- >>> :set -XGADTs -XUndecidableInstances -XDataKinds
 -- >>> import Fcf.Core (Exp, Eval)
 -- >>> import Fcf.Combinators
 -- >>> import Fcf.Class.Foldable (Concat)
+-- >>> import Fcf.Class.Functor ()
 -- >>> import Fcf.Class.Monoid ()
 -- >>> import Fcf.Data.Nat
 -- >>> import Fcf.Utils (If, TyEq)
@@ -121,6 +125,36 @@ type instance Eval (Init '[]) = 'Nothing
 type instance Eval (Init (a ': '[])) = 'Just '[]
 type instance Eval (Init (a ': b ': as)) =
   Eval (Map (Cons a) =<< (Init (b ': as)))
+
+data Uncons :: [a] -> Exp (Maybe (a, [a]))
+type instance Eval (Uncons '[]) = 'Nothing
+type instance Eval (Uncons (a ': xs)) = 'Just '(a, xs)
+
+-- | Decompose a list into 'init' and 'last'
+--
+-- === __Example__
+--
+-- >>> :kind! Eval (Unsnoc '[])
+-- Eval (Unsnoc '[]) :: Maybe ([a], a)
+-- = Nothing
+--
+-- >>> :kind! Eval (Unsnoc '[1])
+-- Eval (Unsnoc '[1]) :: Maybe ([Natural], Natural)
+-- = Just '( '[], 1)
+--
+-- >>> :kind! Eval (Unsnoc '[1,2,3])
+-- Eval (Unsnoc '[1,2,3]) :: Maybe ([Natural], Natural)
+-- = Just '([1, 2], 3)
+data Unsnoc :: [a] -> Exp (Maybe ([a], a))
+type instance Eval (Unsnoc '[]) = 'Nothing
+type instance Eval (Unsnoc (x ': '[])) = 'Just '( '[], x)
+type instance Eval (Unsnoc (x ': y ': ys)) = Eval (Map (PrependF x) =<< Unsnoc (y ': ys))
+
+data PrependF :: a -> ([a], a) -> Exp ([a], a)
+type instance Eval (PrependF x '(xs, y)) = '(x ': xs, y)
+
+data Singleton :: a -> Exp [a]
+type instance Eval (Singleton x) = '[x]
 
 data Tail :: [a] -> Exp (Maybe [a])
 type instance Eval (Tail '[]) = 'Nothing
