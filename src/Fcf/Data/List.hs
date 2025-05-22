@@ -89,6 +89,7 @@ import Fcf.Utils (If, TyEq)
 -- >>> import Fcf.Core (Exp, Eval)
 -- >>> import Fcf.Combinators
 -- >>> import Fcf.Class.Foldable (Concat)
+-- >>> import Fcf.Class.Functor ()
 -- >>> import Fcf.Class.Monoid ()
 -- >>> import Fcf.Data.Nat
 -- >>> import Fcf.Utils (If, TyEq)
