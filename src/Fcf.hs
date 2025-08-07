@@ -43,7 +43,14 @@ module Fcf
   , Pure1
   , Pure2
   , Pure3
+  , Pure4
+  , Pure5
+  , Pure6
+  , Pure7
+  , Pure8
+  , Pure9
   , type (=<<)
+  , type (>>=)
   , type (<=<)
   , LiftM
   , LiftM2
@@ -79,22 +86,49 @@ module Fcf
 
     -- ** Lists
 
-  , Foldr
-  , UnList
   , type (++)
-  , Filter
   , Head
+  , Last
   , Tail
+  , Cons
+  , Snoc
+  , Cons2
+  , Init
+  , Uncons
+  , Unsnoc
+  , Singleton
   , Null
   , Length
-  , Find
-  , FindIndex
+  , Reverse
+  , Intersperse
+  , Intercalate
+  , Foldr
+  , UnList
+  , Concat
+  , ConcatMap
+  , Unfoldr
+  , Replicate
+  , Take
+  , Drop
+  , SplitAt
+  , TakeWhile
+  , DropWhile
+  , Span
+  , Break
+  , Tails
+  , IsPrefixOf
+  , IsSuffixOf
+  , IsInfixOf
+  , Elem
   , Lookup
+  , Find
+  , Filter
+  , Partition
+  , FindIndex
   , SetIndex
   , ZipWith
   , Zip
   , Unzip
-  , Cons2
 
     -- ** Bool
 
