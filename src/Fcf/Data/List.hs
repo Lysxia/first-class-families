@@ -11,6 +11,7 @@
 module Fcf.Data.List
   ( -- * Basic functions
     type (++)
+  , type (^++^)
   , Head
   , Last
   , Tail
@@ -110,6 +111,9 @@ import Fcf.Utils (If, TyEq)
 data (++) :: [a] -> [a] -> Exp [a]
 type instance Eval ((++) xs ys) = xs <> ys
 
+infixr 5 ^++^
+data (^++^) :: Exp [a] -> Exp [a] -> Exp [a]
+type instance Eval ((^++^) xs ys) = Eval (LiftM2 (++) xs ys)
 
 data Head :: [a] -> Exp (Maybe a)
 type instance Eval (Head '[]) = 'Nothing
