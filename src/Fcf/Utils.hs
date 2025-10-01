@@ -158,7 +158,7 @@ type Else = ('Else_ :: (j -> Exp k) -> Match j k)
 -- @
 data Assert :: ErrorMessage -> Exp Bool -> r -> Exp r
 type instance Eval (Assert msg mcond k)
-  = Eval (LiftM2 (AssertImpl msg) mcond (Pure k))
+  = Eval (If (Eval mcond) (Pure k) (TError msg))
 
 -- | Compile-time assert, with condition negated.
 --
@@ -168,8 +168,3 @@ type instance Eval (Assert msg mcond k)
 data AssertNot :: forall r. ErrorMessage -> Exp Bool -> r -> Exp r
 type instance Eval (AssertNot err mcond k)
   = Eval (Assert err (Not =<< mcond) k)
-
--- | Unexported
-data AssertImpl :: ErrorMessage -> Bool -> r -> Exp r
-type instance Eval (AssertImpl err False _) = TypeError err
-type instance Eval (AssertImpl _e True ret) = ret
