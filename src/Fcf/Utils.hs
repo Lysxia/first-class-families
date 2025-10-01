@@ -25,6 +25,14 @@ module Fcf.Utils
 
     -- * From "Data.Type.Bool"
   , If
+
+    -- * Compile-time asserts
+  , Assert
+  , AssertNot
+
+    -- * Reexports
+  , GHC.TypeLits.ErrorMessage(Text, ShowType, type (:<>:), type (:$$:))
+  , GHC.TypeLits.TypeError
   ) where
 
 import Data.Kind (Constraint)
@@ -32,7 +40,8 @@ import Data.Type.Bool (If)
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage(..))
 
 import Fcf.Core
-import Fcf.Combinators (Pure)
+import Fcf.Combinators (Pure, LiftM2, type (=<<))
+import Fcf.Data.Bool (Not)
 
 -- | Type-level 'error'.
 data Error :: Symbol -> Exp a
@@ -134,3 +143,33 @@ type Any = ('Any_ :: k -> Match j k)
 -- | Pass type being matched in 'Case' to subcomputation. Should be used as a
 -- final branch.
 type Else = ('Else_ :: (j -> Exp k) -> Match j k)
+
+-- | A compile-time assert.
+--
+-- Raises the provided `TypeError`, whenever the condition evaluates to `False`.
+--
+-- Usage example:
+-- @
+-- type ExampleAssertionFailure = Eval (
+--   Pure '["foo", "bar"]
+--   >>= Length
+--   >>= Assert ('Text "Assertion") (TyEq Int Void)
+--   )
+-- @
+data Assert :: ErrorMessage -> Exp Bool -> r -> Exp r
+type instance Eval (Assert msg mcond k)
+  = Eval (LiftM2 (AssertImpl msg) mcond (Pure k))
+
+-- | Compile-time assert, with condition negated.
+--
+-- Raises the provided `TypeError`, whenever the condition evaluates to `True`.
+--
+-- Also see 'Assert'.
+data AssertNot :: forall r. ErrorMessage -> Exp Bool -> r -> Exp r
+type instance Eval (AssertNot err mcond k)
+  = Eval (Assert err (Not =<< mcond) k)
+
+-- | Unexported
+data AssertImpl :: ErrorMessage -> Bool -> r -> Exp r
+type instance Eval (AssertImpl err False _) = TypeError err
+type instance Eval (AssertImpl _e True ret) = ret
