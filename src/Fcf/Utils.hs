@@ -40,7 +40,7 @@ import Data.Type.Bool (If)
 import GHC.TypeLits (Symbol, TypeError, ErrorMessage(..))
 
 import Fcf.Core
-import Fcf.Combinators (Pure, LiftM2, type (=<<))
+import Fcf.Combinators (Pure, type (=<<))
 import Fcf.Data.Bool (Not)
 
 -- | Type-level 'error'.
