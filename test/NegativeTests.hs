@@ -1,4 +1,12 @@
-{-# LANGUAGE GHC2021, LambdaCase, DataKinds, TypeFamilies #-}
+{-# LANGUAGE
+    ScopedTypeVariables,
+    LambdaCase,
+    DataKinds,
+    TypeApplications,
+    TypeFamilies,
+    TypeOperators,
+    PolyKinds,
+    FlexibleInstances #-}
 
 -- Compile the module with type errors, allowing to assert they throw at test runtime
 {-# OPTIONS_GHC -fdefer-type-errors #-}
