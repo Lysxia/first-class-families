@@ -97,7 +97,7 @@ _ = Refl :: Eval (((+) `On` Length) '[1,2,3] '[1,2]) :~: 5
 -- ** Asserts
 
 _ = Refl :: Eval (Pure Monoid.First >>= Assert ('Text "no error") (Pure True)) :~: Monoid.First
-_ = Refl :: Eval (Pure Void >>= AssertNot ('Text "no error") (Pure False)) :~: Void
+_ = Refl :: Eval (Pure Int >>= AssertNot ('Text "no error") (Pure False)) :~: Int
 -- negative tests (asserts firing at compile time) are a challenge to test. tried, but omitted
 
 -- Dummy
