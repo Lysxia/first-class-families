@@ -21,8 +21,6 @@ import Fcf.Data.Function
 import Fcf.Data.List
 import Fcf.Data.Nat (type (+))
 
-import NegativeTests
-
 type UnitPrefix = Case
   [ 0 --> ""
   , 1 --> "deci"
