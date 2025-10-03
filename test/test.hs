@@ -9,8 +9,8 @@ import qualified Data.Monoid as Monoid
 
 import Fcf.Core (Eval, type (@@))
 import Fcf.Combinators
-import Fcf.Utils (Case, type (-->), Error)
-import qualified Fcf.Utils as Case
+import Fcf.Utils (Assert, AssertNot, Case, type (-->), Error, ErrorMessage (Text), TypeError)
+import qualified Fcf.Utils as Utils
 
 import Fcf.Class.Bifunctor
 import Fcf.Class.Foldable
@@ -28,7 +28,7 @@ type UnitPrefix = Case
   , 3 --> "kilo"
   , 6 --> "mega"
   , 9 --> "giga"
-  , Case.Any   (Error @@ "Something Else")
+  , Utils.Any   (Error @@ "Something Else")
   ]
 
 -- Compile-time tests
@@ -93,6 +93,12 @@ _ = Refl :: Eval (Second ((+) 1) ('Right 8)) :~: 'Right 9
 
 _ = Refl :: Eval (3 & Pure) :~: 3
 _ = Refl :: Eval (((+) `On` Length) '[1,2,3] '[1,2]) :~: 5
+
+-- ** Asserts
+
+_ = Refl :: Eval (Pure Monoid.First >>= Assert ('Text "no error") (Pure True)) :~: Monoid.First
+_ = Refl :: Eval (Pure Int >>= AssertNot ('Text "no error") (Pure False)) :~: Int
+-- negative tests (asserts firing at compile time) are a challenge to test. tried, but omitted
 
 -- Dummy
 

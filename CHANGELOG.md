@@ -1,3 +1,7 @@
+# 0.8.2.0
+
+- Add `Fcf.Utils.Assert` and `Fcf.Utils.AssertNot`.
+
 # 0.8.1.0
 
 - Add `(Fcf.Combinators.>>=)`
