@@ -15,6 +15,7 @@
 -- Note that the operators from this module conflict with "GHC.TypeLits" and
 -- "GHC.TypeNats".
 module Fcf.Data.Nat
+  {-# DEPRECATED "Use Fcf.Class.Num or Fcf.Class.Ord instead." #-}
   ( -- * Reexported type
     -- | From "GHC.TypeNats".
 
