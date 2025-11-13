@@ -150,7 +150,7 @@ module Fcf
 
   , type (+)
   , type (-)
-  , type (Fcf.Data.Nat.*)
+  , type (Fcf.Class.Num.*)
   , type (^)
   , type (<=)
   , type (>=)
@@ -180,7 +180,8 @@ import Fcf.Combinators
 import Fcf.Data.Bool
 import Fcf.Data.Common
 import Fcf.Data.List
-import Fcf.Data.Nat
+import Fcf.Class.Ord
 import Fcf.Class.Functor
 import Fcf.Class.Bifunctor
+import Fcf.Class.Num
 import Fcf.Utils
