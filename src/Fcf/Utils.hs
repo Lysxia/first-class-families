@@ -31,7 +31,7 @@ module Fcf.Utils
   , AssertNot
 
     -- * Reexports
-  , GHC.TypeLits.ErrorMessage(Text, ShowType, type (:<>:), type (:$$:))
+  , GHC.TypeLits.ErrorMessage(Text, ShowType, (:<>:), (:$$:))
   , GHC.TypeLits.TypeError
   ) where
 
